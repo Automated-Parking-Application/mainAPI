@@ -6,6 +6,10 @@ Prerequisite of Spring Boot:
 Database:
   MySQL (with name of database: apa)
 
+Update database config at application.properties with username and password of database:
+  spring.datasource.username=root
+  spring.datasource.password=IamLeo0708
+
 Tools:
   MySQL Workbench or TablePlus
 

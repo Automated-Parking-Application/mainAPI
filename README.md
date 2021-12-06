@@ -8,3 +8,9 @@ Database:
 
 Tools:
   MySQL Workbench or TablePlus
+
+Install:
+./mvnw clean install
+
+Run:
+./mvnw spring-boot:run

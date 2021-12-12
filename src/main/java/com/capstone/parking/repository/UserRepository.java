@@ -11,4 +11,6 @@ import java.util.List;
 public interface UserRepository extends JpaRepository<UserEntity, Integer> {
   @Override
   List<UserEntity> findAll();
+
+  Boolean existsByPhoneNumber(String phoneNumber);
 }

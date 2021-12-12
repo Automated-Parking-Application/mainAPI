@@ -13,8 +13,13 @@ Update database config at application.properties with username and password of d
 Tools:
   MySQL Workbench or TablePlus
 
+init maven wrapper:
+  mvn -N io.takari:maven:wrapper
+
 Install:
-./mvnw clean install
+  ./mvnw clean install
 
 Run:
-./mvnw spring-boot:run
+  ./mvnw spring-boot:run
+
+Service running at localhost:8080

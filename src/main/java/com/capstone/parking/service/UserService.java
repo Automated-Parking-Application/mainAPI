@@ -1,8 +1,12 @@
 package com.capstone.parking.service;
 
+import com.capstone.parking.dto.SignUpDto;
+
 import org.springframework.http.ResponseEntity;
 
 public interface UserService {
-	ResponseEntity register(String phoneNumber, String password, String fullname, String address);
+	ResponseEntity register(SignUpDto signUpDto);
+
+	Boolean existsByPhoneNumber(String phoneNumber);
 
 }

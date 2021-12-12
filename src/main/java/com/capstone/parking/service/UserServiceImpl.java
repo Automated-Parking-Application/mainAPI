@@ -1,8 +1,8 @@
 package com.capstone.parking.service;
 
-
 import com.capstone.parking.constants.ApaRole;
 import com.capstone.parking.constants.ApaStatus;
+import com.capstone.parking.dto.SignUpDto;
 import com.capstone.parking.entity.RoleEntity;
 import com.capstone.parking.entity.UserEntity;
 import com.capstone.parking.repository.RoleRepository;
@@ -25,19 +25,23 @@ public class UserServiceImpl implements UserService {
     private final RoleEntity userRole;
 
     @Autowired
-    public UserServiceImpl(UserRepository userRepository,RoleRepository roleRepository,  BCryptPasswordEncoder passwordEncoder) {
+    public UserServiceImpl(UserRepository userRepository, RoleRepository roleRepository,
+            BCryptPasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.roleRepository = roleRepository;
-        this.userRole = roleRepository.findTop1ByName(ApaRole.ROLE_USER);
+        this.userRole = roleRepository.findTop1ByName(ApaRole.ROLE_ADMIN);
     }
 
     @Override
-    public ResponseEntity register(String phoneNumber, String password, String fullname, String address) {
-        return register(phoneNumber, password, fullname, address, this.userRole);
+    public ResponseEntity register(SignUpDto signUpDto) {
+        return register(signUpDto.getPhoneNumber(), signUpDto.getPassword(), signUpDto.getFullName(),
+                signUpDto.getAddress(),
+                this.userRole);
     }
 
-    public ResponseEntity register(String phoneNumber, String password, String fullname, String address, RoleEntity roleEntity) {
+    public ResponseEntity register(String phoneNumber, String password, String fullname, String address,
+            RoleEntity roleEntity) {
         UserEntity userEntity = new UserEntity();
         try {
             userEntity.setPhoneNumber(phoneNumber);
@@ -51,5 +55,10 @@ public class UserServiceImpl implements UserService {
             return new ResponseEntity<>(new ApaMessage(e.getMessage()), HttpStatus.CONFLICT);
         }
         return new ResponseEntity<>(userEntity, HttpStatus.OK);
+    }
+
+    @Override
+    public Boolean existsByPhoneNumber(String phoneNumber) {
+        return userRepository.existsByPhoneNumber(phoneNumber);
     }
 }

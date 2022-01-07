@@ -3,6 +3,18 @@ package com.capstone.parking.controller;
 import com.capstone.parking.dto.SignUpDto;
 import com.capstone.parking.repository.RoleRepository;
 import com.capstone.parking.service.UserService;
+import com.capstone.parking.utilities.ApaMessage;
+
+import java.util.Map;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+
+import com.capstone.parking.dto.SignUpDto;
+import com.capstone.parking.repository.RoleRepository;
+import com.capstone.parking.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,5 +42,17 @@ public class UserController {
         }
 
         return userService.register(signUpDto);
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity login(@RequestBody Map<String, String> body) {
+        String phoneNumber = body.get("phoneNumber");
+        String password = body.get("password");
+        try {
+            ResponseEntity responseEntity = userService.login(phoneNumber, password);
+            return responseEntity;
+        } catch (Exception ex) {
+        }
+        return new ResponseEntity<>(new ApaMessage("Cannot login"), HttpStatus.BAD_REQUEST);
     }
 }

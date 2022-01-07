@@ -8,5 +8,6 @@ public interface UserService {
 	ResponseEntity register(SignUpDto signUpDto);
 
 	Boolean existsByPhoneNumber(String phoneNumber);
+	ResponseEntity login(String phoneNumber, String password);
 
 }

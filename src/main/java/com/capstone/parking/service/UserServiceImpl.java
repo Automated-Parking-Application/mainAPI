@@ -8,7 +8,11 @@ import com.capstone.parking.entity.UserEntity;
 import com.capstone.parking.repository.RoleRepository;
 import com.capstone.parking.repository.UserRepository;
 import com.capstone.parking.utilities.ApaMessage;
+
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -60,5 +64,23 @@ public class UserServiceImpl implements UserService {
     @Override
     public Boolean existsByPhoneNumber(String phoneNumber) {
         return userRepository.existsByPhoneNumber(phoneNumber);
+    }
+
+    @Override
+    public ResponseEntity login(String phoneNumber, String password) {
+        UserEntity userEntity = userRepository.findFirstByPhoneNumber(phoneNumber);
+        if (userEntity != null && passwordEncoder.matches(password, userEntity.getPassword())) {
+            if (userEntity.getStatus().equals(ApaStatus.USER_DISABLE)) {
+                return new ResponseEntity<>(new ApaMessage("Cannot login"), HttpStatus.BAD_REQUEST);
+            }
+            Map<String, Object> data = new HashMap<>();
+            data.put(
+                    TokenAuthenticationService.HEADER_STRING,
+                    TokenAuthenticationService.createToken(userEntity));
+            data.put("User", userEntity);
+            return new ResponseEntity<>(data, HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(new ApaMessage("Cannot login"), HttpStatus.BAD_REQUEST);
+        }
     }
 }

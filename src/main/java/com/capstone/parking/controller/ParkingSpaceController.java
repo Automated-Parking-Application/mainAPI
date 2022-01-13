@@ -2,8 +2,11 @@ package com.capstone.parking.controller;
 
 import java.util.Map;
 
+import com.capstone.parking.entity.ParkingSpaceEntity;
 import com.capstone.parking.entity.UserEntity;
 import com.capstone.parking.service.ParkingSpaceService;
+import com.capstone.parking.utilities.ApaMessage;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -24,12 +27,22 @@ public class ParkingSpaceController {
   @PostMapping("/create")
   public ResponseEntity register(@RequestBody Map<String, String> body, HttpServletRequest request,
       HttpServletResponse response) {
-    String name = body.get("name");
-    String address = body.get("address");
+    ParkingSpaceEntity parkingSpaceEntity;
+    try {
+      parkingSpaceEntity = new ParkingSpaceEntity();
+      String name = body.get("name");
+      String address = body.get("address");
+      int userId = getLoginUserId(request);
+      parkingSpaceEntity.setOwnerId(userId);
+      parkingSpaceEntity.setName(name);
+      parkingSpaceEntity.setAddress(address);
+      parkingSpaceEntity = parkingSpaceService.createParkingSpace(parkingSpaceEntity);
 
-
-
-    return null;
+    } catch (Exception e) {
+      e.printStackTrace();
+      return new ResponseEntity(new ApaMessage(e.getMessage()), HttpStatus.CONFLICT);
+    }
+    return new ResponseEntity(parkingSpaceEntity, HttpStatus.OK);
   }
 
   private int getLoginUserId(HttpServletRequest servletRequest) {

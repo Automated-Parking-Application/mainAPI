@@ -2,12 +2,12 @@ package com.capstone.parking.service;
 
 import com.capstone.parking.constants.ApaRole;
 import com.capstone.parking.constants.ApaStatus;
-import com.capstone.parking.dto.SignUpDto;
 import com.capstone.parking.entity.RoleEntity;
 import com.capstone.parking.entity.UserEntity;
 import com.capstone.parking.repository.RoleRepository;
 import com.capstone.parking.repository.UserRepository;
 import com.capstone.parking.utilities.ApaMessage;
+import com.capstone.parking.wrapper.SignUpBody;
 
 import java.util.HashMap;
 import java.util.List;
@@ -38,7 +38,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public ResponseEntity register(SignUpDto signUpDto) {
+    public ResponseEntity register(SignUpBody signUpDto) {
         return register(signUpDto.getPhoneNumber(), signUpDto.getPassword(), signUpDto.getFullName(),
                 signUpDto.getAddress(),
                 this.userRole);

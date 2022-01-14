@@ -12,6 +12,7 @@ public class ParkingSpaceEntity {
   private int id;
   private String name;
   private String address;
+  private String status;
   private Integer ownerId;
   private UserEntity userEntity;
 
@@ -34,6 +35,16 @@ public class ParkingSpaceEntity {
 
   public void setName(String name) {
     this.name = name;
+  }
+
+  @Basic
+  @Column(name = "status")
+  public String getStatus() {
+    return status;
+  }
+
+  public void setStatus(String status) {
+    this.status = status;
   }
 
   @Basic

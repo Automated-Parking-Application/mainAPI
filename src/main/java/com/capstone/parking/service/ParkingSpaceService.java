@@ -10,4 +10,6 @@ public interface ParkingSpaceService {
 
   ResponseEntity getAllParkingSpaceByOwnerId(int ownerId);
 
+  ResponseEntity deactivateParkingSpace(int id, int userId);
+
 }

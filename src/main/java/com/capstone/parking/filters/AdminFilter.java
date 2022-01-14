@@ -30,7 +30,7 @@ public class AdminFilter implements Filter {
             if (token != null && !token.equals("null")) {
                 UserEntity userEntity = TokenAuthenticationService.getUserFromToken(token);
                 if (userEntity != null) {
-                    if (userEntity.getRoleByRoleId().getName().equals(ApaRole.ROLE_ADMIN)) {
+                    if (userEntity.getRoleByRoleId().getName().equals(ApaRole.ROLE_SUPERADMMIN)) {
                         request.setAttribute("USER_INFO", userEntity);
                         filterChain.doFilter(request, response);
                     } else {

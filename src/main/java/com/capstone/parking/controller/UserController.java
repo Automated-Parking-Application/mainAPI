@@ -6,15 +6,6 @@ import com.capstone.parking.utilities.ApaMessage;
 import com.capstone.parking.wrapper.SignInBody;
 import com.capstone.parking.wrapper.SignUpBody;
 
-import java.util.Map;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-
-import com.capstone.parking.repository.RoleRepository;
-import com.capstone.parking.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -46,13 +37,17 @@ public class UserController {
 
     @PostMapping("/login")
     public ResponseEntity login(@RequestBody SignInBody body) {
-        String phoneNumber = body.getPhoneNumber();
-        String password = body.getPassword();
+        ResponseEntity responseEntity;
         try {
-            ResponseEntity responseEntity = userService.login(phoneNumber, password);
-            return responseEntity;
+            String phoneNumber = body.getPhoneNumber();
+            String password = body.getPassword();
+            if (phoneNumber.length() == 0 || password.length() == 0) {
+                return new ResponseEntity<>(new ApaMessage("Missing phone number or password"), HttpStatus.BAD_REQUEST);
+            }
+            responseEntity = userService.login(phoneNumber, password);
         } catch (Exception ex) {
+            return new ResponseEntity<>(new ApaMessage("Cannot login"), HttpStatus.BAD_REQUEST);
         }
-        return new ResponseEntity<>(new ApaMessage("Cannot login"), HttpStatus.BAD_REQUEST);
+        return responseEntity;
     }
 }

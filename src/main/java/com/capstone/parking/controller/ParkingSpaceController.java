@@ -12,9 +12,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -43,6 +43,17 @@ public class ParkingSpaceController {
       return new ResponseEntity(new ApaMessage(e.getMessage()), HttpStatus.CONFLICT);
     }
     return new ResponseEntity(parkingSpaceEntity, HttpStatus.OK);
+  }
+
+  @GetMapping("/")
+  public ResponseEntity getAllParkingSpaceByOwnerId(HttpServletRequest request) {
+    int ownerId;
+    try {
+      ownerId = getLoginUserId(request);
+    } catch (Exception e) {
+      return new ResponseEntity(new ApaMessage(e.getMessage()), HttpStatus.CONFLICT);
+    }
+    return parkingSpaceService.getAllParkingSpaceByOwnerId(ownerId);
   }
 
   private int getLoginUserId(HttpServletRequest servletRequest) {

@@ -1,5 +1,6 @@
 package com.capstone.parking.filters;
 
+import com.capstone.parking.constants.ApaConstant;
 import com.capstone.parking.constants.ApaRole;
 import com.capstone.parking.entity.UserEntity;
 import com.capstone.parking.repository.UserRepository;
@@ -34,19 +35,19 @@ public class AdminFilter implements Filter {
                         filterChain.doFilter(request, response);
                     } else {
                         response.setStatus(HttpStatus.FORBIDDEN.value());
-                        response.getWriter().write("{\"message\":\"Access denied\"}");
+                        response.getWriter().write(ApaConstant.ACCESS_DENIED_MESSAGE);
                     }
                 } else {
                     response.setStatus(HttpStatus.FORBIDDEN.value());
-                    response.getWriter().write("{\"message\":\"Access denied\"}");
+                    response.getWriter().write(ApaConstant.ACCESS_DENIED_MESSAGE);
                 }
             } else {
                 response.setStatus(HttpStatus.FORBIDDEN.value());
-                response.getWriter().write("{\"message\":\"Access denied\"}");
+                response.getWriter().write(ApaConstant.ACCESS_DENIED_MESSAGE);
             }
         } catch (Exception e) {
             response.setStatus(HttpStatus.FORBIDDEN.value());
-            response.getWriter().write("{\"message\":\"Access denied\"}");
+            response.getWriter().write(ApaConstant.ACCESS_DENIED_MESSAGE);
         }
 
     }

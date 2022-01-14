@@ -1,5 +1,6 @@
 package com.capstone.parking.filters;
 
+import com.capstone.parking.constants.ApaConstant;
 import com.capstone.parking.entity.UserEntity;
 import com.capstone.parking.service.TokenAuthenticationService;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
@@ -14,7 +15,6 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 
-
 public class JwtFilter implements Filter {
 
     @Override
@@ -23,7 +23,8 @@ public class JwtFilter implements Filter {
     }
 
     @Override
-    public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
+    public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain)
+            throws IOException, ServletException {
         HttpServletRequest request = (HttpServletRequest) servletRequest;
         HttpServletResponse response = (HttpServletResponse) servletResponse;
         if ("GET".equals(request.getMethod()) && request.getHeader("Authorization") == null) {
@@ -37,11 +38,11 @@ public class JwtFilter implements Filter {
                     filterChain.doFilter(request, response);
                 } else {
                     response.setStatus(HttpStatus.FORBIDDEN.value());
-                    response.getWriter().write("{\"message\":\"Access denied\"}");
+                    response.getWriter().write(ApaConstant.ACCESS_DENIED_MESSAGE);
                 }
             } else {
                 response.setStatus(HttpStatus.FORBIDDEN.value());
-                response.getWriter().write("{\"message\":\"Access denied\"}");
+                response.getWriter().write(ApaConstant.ACCESS_DENIED_MESSAGE);
             }
         }
     }

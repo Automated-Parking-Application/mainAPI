@@ -12,4 +12,6 @@ public interface ParkingSpaceService {
 
   ResponseEntity deactivateParkingSpace(int id, int userId);
 
+  ResponseEntity updateParkingSpace(ParkingSpaceEntity parkingSpaceEntity, int userId);
+
 }

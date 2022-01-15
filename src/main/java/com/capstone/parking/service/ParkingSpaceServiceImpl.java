@@ -1,7 +1,5 @@
 package com.capstone.parking.service;
 
-import java.util.List;
-
 import com.capstone.parking.constants.ApaRole;
 import com.capstone.parking.constants.ApaStatus;
 import com.capstone.parking.entity.ParkingSpaceEntity;
@@ -9,11 +7,13 @@ import com.capstone.parking.entity.UserEntity;
 import com.capstone.parking.repository.ParkingSpaceRepository;
 import com.capstone.parking.repository.UserRepository;
 import com.capstone.parking.utilities.ApaMessage;
-
+import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+
+
 
 @Service
 public class ParkingSpaceServiceImpl implements ParkingSpaceService {
@@ -61,6 +61,27 @@ public class ParkingSpaceServiceImpl implements ParkingSpaceService {
         return new ResponseEntity(new ApaMessage(e.getMessage()), HttpStatus.CONFLICT);
       }
       return new ResponseEntity("", HttpStatus.OK);
+    } else {
+      return new ResponseEntity("Cannot access this parking space", HttpStatus.FORBIDDEN);
+    }
+  }
+
+  @Override
+  public ResponseEntity updateParkingSpace(ParkingSpaceEntity parkingSpaceEntity, int userId) {
+    ParkingSpaceEntity updatedParkingSpaceEntity = parkingSpaceRepository.getById(parkingSpaceEntity.getId());
+    UserEntity user = userRepository.getById(userId);
+    if (updatedParkingSpaceEntity == null) {
+      return ResponseEntity.notFound().build();
+    }
+    if (updatedParkingSpaceEntity.getOwnerId() == user.getId() || user.getRoleByRoleId().getName().equals(ApaRole.ROLE_SUPERADMMIN)) {
+      try {
+        parkingSpaceRepository.save(parkingSpaceEntity);
+      } catch (Exception e) {
+        System.out.println("ParkingSpaceService: updateParkingSpace " +e.getMessage());
+        return new ResponseEntity(new ApaMessage(e.getMessage()), HttpStatus.CONFLICT);
+      }
+      return new ResponseEntity("", HttpStatus.OK);
+
     } else {
       return new ResponseEntity("Cannot access this parking space", HttpStatus.FORBIDDEN);
     }

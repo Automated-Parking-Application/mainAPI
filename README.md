@@ -5,6 +5,7 @@ Prerequisite of Spring Boot:
 
 Database:
   MySQL (with name of database: apa)
+  Running init.sql in the first time create database
 
 Update database config at application.properties with username and password of database:
   spring.datasource.username=root

@@ -5,25 +5,16 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
-
 import java.io.IOException;
 import java.util.Date;
 import java.util.StringTokenizer;
 
+
 public class TokenAuthenticationService {
     static final long EXPIRATIONTIME = 864_000_000; // 10 days
-    static final String SECRET = "ExffSecrect";
+    static final String SECRET = "QRPARKINGAPPLICATIONSECRETKEYFORMYCAPSTONEPROJECTQRPARKINGAPPLICATIONSECRETKEYFORMYCAPSTONEPROJECTQRPARKINGAPPLICATIONSECRETKEYFORMYCAPSTONEPROJECTQRPARKINGAPPLICATIONSECRETKEYFORMYCAPSTONEPROJECT";
     static final String TOKEN_PREFIX = "Bearer";
     static public final String HEADER_STRING = "Authorization";
-
-    public static String createToken(String username) {
-        String token = Jwts.builder()
-                .setSubject(username)
-                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATIONTIME))
-                .signWith(SignatureAlgorithm.HS512, SECRET)
-                .compact();
-        return TOKEN_PREFIX + " " + token;
-    }
 
     public static String createToken(UserEntity userEntity) {
         ObjectMapper mapper = new ObjectMapper();

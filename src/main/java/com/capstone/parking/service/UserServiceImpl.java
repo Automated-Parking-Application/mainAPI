@@ -8,16 +8,16 @@ import com.capstone.parking.repository.RoleRepository;
 import com.capstone.parking.repository.UserRepository;
 import com.capstone.parking.utilities.ApaMessage;
 import com.capstone.parking.wrapper.SignUpBody;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+
+
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -71,7 +71,7 @@ public class UserServiceImpl implements UserService {
         UserEntity userEntity = userRepository.findFirstByPhoneNumber(phoneNumber);
         if (userEntity != null && passwordEncoder.matches(password, userEntity.getPassword())) {
             if (userEntity.getStatus().equals(ApaStatus.USER_DISABLE)) {
-                return new ResponseEntity<>(new ApaMessage("Cannot login"), HttpStatus.BAD_REQUEST);
+                return new ResponseEntity<>(new ApaMessage("Account is disabled"), HttpStatus.NOT_ACCEPTABLE);
             }
             Map<String, Object> data = new HashMap<>();
             data.put(
@@ -80,7 +80,7 @@ public class UserServiceImpl implements UserService {
             data.put("User", userEntity);
             return new ResponseEntity<>(data, HttpStatus.OK);
         } else {
-            return new ResponseEntity<>(new ApaMessage("Cannot login"), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(new ApaMessage("Phone Number or Password is wrong"), HttpStatus.BAD_REQUEST);
         }
     }
 }

@@ -84,6 +84,17 @@ public class ParkingSpaceController {
     return parkingSpaceService.deactivateParkingSpace(id, userId);
   }
 
+  @GetMapping("/")
+  public ResponseEntity getAllParkingSpaceByOwnerId(HttpServletRequest request) {
+    int ownerId;
+    try {
+      ownerId = getLoginUserId(request);
+    } catch (Exception e) {
+      return new ResponseEntity(new ApaMessage(e.getMessage()), HttpStatus.CONFLICT);
+    }
+    return parkingSpaceService.getAllParkingSpaceByOwnerId(ownerId);
+  }
+
   @PostMapping("/{id:[\\d]+}/user")
   @Transactional
   public ResponseEntity addingParkingSpaceAttendant(@PathVariable("id") int id, @RequestBody Map<String, Object> body,
@@ -99,15 +110,16 @@ public class ParkingSpaceController {
     return parkingSpaceService.addingParkingSpaceAttendant(id, userId, parkingSpaceAttendantPhoneNumber);
   }
 
-  @GetMapping("/")
-  public ResponseEntity getAllParkingSpaceByOwnerId(HttpServletRequest request) {
-    int ownerId;
+  @GetMapping("/{id:[\\d]+}/user")
+  public ResponseEntity getParkingLotAttendantByParkingId(@PathVariable("id") int id,
+      HttpServletRequest request) {
+    int userId;
     try {
-      ownerId = getLoginUserId(request);
+      userId = getLoginUserId(request);
     } catch (Exception e) {
       return new ResponseEntity(new ApaMessage(e.getMessage()), HttpStatus.CONFLICT);
     }
-    return parkingSpaceService.getAllParkingSpaceByOwnerId(ownerId);
+    return parkingSpaceService.getParkingLotAttendantByParkingId(id, userId);
   }
 
   private int getLoginUserId(HttpServletRequest servletRequest) {

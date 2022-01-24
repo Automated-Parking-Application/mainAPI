@@ -15,6 +15,7 @@ import com.capstone.parking.repository.UserRepository;
 import com.capstone.parking.utilities.ApaMessage;
 import java.util.List;
 import java.util.Random;
+import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -196,4 +197,20 @@ public class ParkingSpaceServiceImpl implements ParkingSpaceService {
     }
   }
 
+  @Override
+  public ResponseEntity getParkingLotAttendantByParkingId(int parkingId, int userId) {
+    try {
+      if (checkIfHavingAdminPermission(parkingId, userId)) {
+        ParkingSpaceEntity parkingSpace = parkingSpaceRepository.getById(parkingId);
+        List<ParkingSpaceAttendantEntity> parkingLotAttendants = parkingSpaceAttendantRepository
+            .findAllByParkingSpaceAndStatus(parkingSpace, ApaStatus.ACTIVE_PARKING_SPACE_ATTENDANT).stream()
+            .filter(p -> p.getUser().getStatus().equals(ApaStatus.USER_ENABLE)).collect(Collectors.toList());
+
+        return new ResponseEntity(parkingLotAttendants, HttpStatus.OK);
+      } else
+        return new ResponseEntity("Cannot access this parking space", HttpStatus.FORBIDDEN);
+    } catch (Exception e) {
+      return new ResponseEntity(e.getMessage(), HttpStatus.BAD_REQUEST);
+    }
+  }
 }

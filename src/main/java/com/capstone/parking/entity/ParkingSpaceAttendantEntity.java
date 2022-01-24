@@ -1,5 +1,6 @@
 package com.capstone.parking.entity;
 
+import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.Objects;
 
@@ -9,7 +10,7 @@ import com.capstone.parking.constants.ApaStatus;
 
 @Entity
 @Table(name = "parking_space_attendant")
-public class ParkingSpaceAttendantEntity {
+public class ParkingSpaceAttendantEntity implements Serializable {
 
     @EmbeddedId
     private ParkingSpaceAttendantKey id;

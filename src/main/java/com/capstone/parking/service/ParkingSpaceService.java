@@ -16,4 +16,6 @@ public interface ParkingSpaceService {
 
   ResponseEntity addingParkingSpaceAttendant(int id, int userId, String parkingSpaceAttendantPhoneNumber);
 
+  ResponseEntity getParkingLotAttendantByParkingId(int id, int userId);
+
 }

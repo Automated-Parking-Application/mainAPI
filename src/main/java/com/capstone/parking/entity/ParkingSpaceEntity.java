@@ -1,17 +1,20 @@
 package com.capstone.parking.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.persistence.*;
 
+import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.Objects;
 import java.util.Set;
 
 @Entity
 @Table(name = "parking_space", schema = "apa")
-public class ParkingSpaceEntity {
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+public class ParkingSpaceEntity implements Serializable {
   private int id;
   private String name;
   private String address;
@@ -109,7 +112,7 @@ public class ParkingSpaceEntity {
 
   @ManyToOne
   @JoinColumn(name = "owner_id", insertable = false, updatable = false)
-  @JsonProperty("user")
+  @JsonProperty("owner")
   public UserEntity getUserEntity() {
     return userEntity;
   }
@@ -129,6 +132,23 @@ public class ParkingSpaceEntity {
         Objects.equals(name, that.name) &&
         Objects.equals(address, that.address) &&
         Objects.equals(ownerId, that.ownerId);
+  }
+
+
+  @Override
+  public String toString() {
+    return "{" +
+      " id='" + getId() + "'" +
+      ", name='" + getName() + "'" +
+      ", address='" + getAddress() + "'" +
+      ", startTime='" + getStartTime() + "'" +
+      ", endTime='" + getEndTime() + "'" +
+      ", description='" + getDescription() + "'" +
+      ", image='" + getImage() + "'" +
+      ", status='" + getStatus() + "'" +
+      ", ownerId='" + getOwnerId() + "'" +
+      ", userEntity='" + getUserEntity() + "'" +
+      "}";
   }
 
   @Override

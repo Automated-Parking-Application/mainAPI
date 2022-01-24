@@ -1,13 +1,17 @@
 package com.capstone.parking.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import javax.persistence.*;
+
+import java.io.Serializable;
 import java.util.Objects;
 
 @Entity
 @Table(name = "`user`", schema = "apa")
-public class UserEntity {
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+public class UserEntity  implements Serializable{
     private int id;
     private String phoneNumber;
     private String password;

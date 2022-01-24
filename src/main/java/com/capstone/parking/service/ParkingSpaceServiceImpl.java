@@ -181,7 +181,7 @@ public class ParkingSpaceServiceImpl implements ParkingSpaceService {
         if (foundUser.getRoleByRoleId().getName().equals(ApaRole.ROLE_PARKING_ATTENDANTS)) {
           try {
             ParkingSpaceAttendantEntity newParkingSpaceAttendant = new ParkingSpaceAttendantEntity(
-                new ParkingSpaceAttendantKey(userId, parkingId));
+                new ParkingSpaceAttendantKey(foundUser.getId(), parkingId));
             parkingSpaceAttendantRepository.save(newParkingSpaceAttendant);
             return new ResponseEntity("", HttpStatus.OK);
           } catch (Exception e) {
@@ -191,8 +191,9 @@ public class ParkingSpaceServiceImpl implements ParkingSpaceService {
           return new ResponseEntity("Cannot add this phone number to parking space", HttpStatus.BAD_REQUEST);
         }
       }
+    } else {
+      return new ResponseEntity("Cannot access this parking space", HttpStatus.FORBIDDEN);
     }
-    return new ResponseEntity("Cannot access this parking space", HttpStatus.FORBIDDEN);
   }
 
 }

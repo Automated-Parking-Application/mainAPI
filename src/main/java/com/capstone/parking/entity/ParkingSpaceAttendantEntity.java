@@ -5,6 +5,8 @@ import java.util.Objects;
 
 import javax.persistence.*;
 
+import com.capstone.parking.constants.ApaStatus;
+
 @Entity
 @Table(name = "parking_space_attendant")
 public class ParkingSpaceAttendantEntity {
@@ -39,6 +41,9 @@ public class ParkingSpaceAttendantEntity {
 
     public ParkingSpaceAttendantEntity(ParkingSpaceAttendantKey id) {
         this.id = id;
+        this.createTime = new Timestamp(System.currentTimeMillis());
+        this.modifyTime = new Timestamp(System.currentTimeMillis());
+        this.status = ApaStatus.ACTIVE_PARKING_SPACE_ATTENDANT;
     }
 
     public ParkingSpaceAttendantEntity id(ParkingSpaceAttendantKey id) {

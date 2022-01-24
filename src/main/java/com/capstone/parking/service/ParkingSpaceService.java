@@ -1,8 +1,8 @@
 package com.capstone.parking.service;
 
 import com.capstone.parking.entity.ParkingSpaceEntity;
-
 import org.springframework.http.ResponseEntity;
+
 
 public interface ParkingSpaceService {
 
@@ -13,5 +13,7 @@ public interface ParkingSpaceService {
   ResponseEntity deactivateParkingSpace(int id, int userId);
 
   ResponseEntity updateParkingSpace(ParkingSpaceEntity parkingSpaceEntity, int userId);
+
+  ResponseEntity addingParkingSpaceAttendant(int id, int userId, String parkingSpaceAttendantPhoneNumber);
 
 }

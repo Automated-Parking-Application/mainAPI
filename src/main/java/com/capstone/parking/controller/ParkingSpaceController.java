@@ -43,7 +43,7 @@ public class ParkingSpaceController {
       parkingSpaceEntity.setAddress(address);
       parkingSpaceEntity.setStatus(status);
     } catch (Exception e) {
-      System.out.println("ParkingSpaceController: updateParkingSpace " +e.getMessage());
+      System.out.println("ParkingSpaceController: updateParkingSpace " + e.getMessage());
       return new ResponseEntity("cannot update parking space", HttpStatus.CONFLICT);
     }
     return parkingSpaceService.updateParkingSpace(parkingSpaceEntity, userId);
@@ -66,7 +66,7 @@ public class ParkingSpaceController {
       parkingSpaceEntity = parkingSpaceService.createParkingSpace(parkingSpaceEntity);
 
     } catch (Exception e) {
-      System.out.println("ParkingSpaceController: register " +e.getMessage());
+      System.out.println("ParkingSpaceController: register " + e.getMessage());
       return new ResponseEntity(new ApaMessage(e.getMessage()), HttpStatus.CONFLICT);
     }
     return new ResponseEntity(parkingSpaceEntity, HttpStatus.OK);
@@ -82,6 +82,21 @@ public class ParkingSpaceController {
       return new ResponseEntity(new ApaMessage(e.getMessage()), HttpStatus.CONFLICT);
     }
     return parkingSpaceService.deactivateParkingSpace(id, userId);
+  }
+
+  @PostMapping("/{id:[\\d]+}/user")
+  @Transactional
+  public ResponseEntity addingParkingSpaceAttendant(@PathVariable("id") int id, @RequestBody Map<String, Object> body,
+      HttpServletRequest request) {
+    int userId;
+    String parkingSpaceAttendantPhoneNumber;
+    try {
+      parkingSpaceAttendantPhoneNumber = (String) body.get("phoneNumber");
+      userId = getLoginUserId(request);
+    } catch (Exception e) {
+      return new ResponseEntity(new ApaMessage(e.getMessage()), HttpStatus.CONFLICT);
+    }
+    return parkingSpaceService.addingParkingSpaceAttendant(id, userId, parkingSpaceAttendantPhoneNumber);
   }
 
   @GetMapping("/")

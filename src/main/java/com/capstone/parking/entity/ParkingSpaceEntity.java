@@ -4,7 +4,10 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.persistence.*;
+
+import java.sql.Timestamp;
 import java.util.Objects;
+import java.util.Set;
 
 @Entity
 @Table(name = "parking_space", schema = "apa")
@@ -12,9 +15,45 @@ public class ParkingSpaceEntity {
   private int id;
   private String name;
   private String address;
+  private Timestamp startTime;
+  private Timestamp endTime;
+  private String description;
+  private String image;
   private String status;
   private Integer ownerId;
   private UserEntity userEntity;
+
+  public Timestamp getStartTime() {
+    return this.startTime;
+  }
+
+  public void setStartTime(Timestamp startTime) {
+    this.startTime = startTime;
+  }
+
+  public Timestamp getEndTime() {
+    return this.endTime;
+  }
+
+  public void setEndTime(Timestamp endTime) {
+    this.endTime = endTime;
+  }
+
+  public String getDescription() {
+    return this.description;
+  }
+
+  public void setDescription(String description) {
+    this.description = description;
+  }
+
+  public String getImage() {
+    return this.image;
+  }
+
+  public void setImage(String image) {
+    this.image = image;
+  }
 
   @Id
   @Column(name = "id")

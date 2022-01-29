@@ -94,7 +94,8 @@ public class ParkingSpaceServiceImpl implements ParkingSpaceService {
   public ResponseEntity getAllParkingSpaceByOwnerId(int ownerId) {
     List<ParkingSpaceEntity> parkingSpaces;
     try {
-      parkingSpaces = parkingSpaceRepository.findAllByOwnerId(ownerId);
+      parkingSpaces = parkingSpaceRepository.findAllByOwnerIdAndStatus(ownerId,
+          (String) ApaStatus.ACTIVE_PARKING_SPACE);
     } catch (Exception e) {
       return new ResponseEntity<>(new ApaMessage(e.getMessage()), HttpStatus.BAD_REQUEST);
     }

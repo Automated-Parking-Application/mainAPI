@@ -11,4 +11,6 @@ public interface ParkingSpaceRepository extends JpaRepository<ParkingSpaceEntity
   <S extends ParkingSpaceEntity> S save(S s);
 
   List findAllByOwnerId(int ownerId);
+
+  List findAllByOwnerIdAndStatus(int ownerId, String status);
 }

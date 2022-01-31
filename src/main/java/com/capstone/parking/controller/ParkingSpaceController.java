@@ -58,10 +58,14 @@ public class ParkingSpaceController {
       parkingSpaceEntity = new ParkingSpaceEntity();
       String name = (String) body.get("name");
       String address = (String) body.get("address");
+      String image = (String) body.get("image");
+      String description = (String) body.get("description");
       int userId = getLoginUserId(request);
       parkingSpaceEntity.setOwnerId(userId);
       parkingSpaceEntity.setName(name);
       parkingSpaceEntity.setAddress(address);
+      parkingSpaceEntity.setDescription(description);
+      parkingSpaceEntity.setImage(image);
       parkingSpaceEntity.setStatus(ApaStatus.ACTIVE_PARKING_SPACE);
       parkingSpaceEntity = parkingSpaceService.createParkingSpace(parkingSpaceEntity);
 

@@ -13,7 +13,7 @@ import java.util.Set;
 
 @Entity
 @Table(name = "parking_space", schema = "apa")
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+@JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
 public class ParkingSpaceEntity implements Serializable {
   private int id;
   private String name;
@@ -26,6 +26,8 @@ public class ParkingSpaceEntity implements Serializable {
   private Integer ownerId;
   private UserEntity userEntity;
 
+  @Basic
+  @Column(name = "startTime")
   public Timestamp getStartTime() {
     return this.startTime;
   }
@@ -34,6 +36,8 @@ public class ParkingSpaceEntity implements Serializable {
     this.startTime = startTime;
   }
 
+  @Basic
+  @Column(name = "endTime")
   public Timestamp getEndTime() {
     return this.endTime;
   }
@@ -42,6 +46,8 @@ public class ParkingSpaceEntity implements Serializable {
     this.endTime = endTime;
   }
 
+  @Basic
+  @Column(name = "description")
   public String getDescription() {
     return this.description;
   }
@@ -134,21 +140,20 @@ public class ParkingSpaceEntity implements Serializable {
         Objects.equals(ownerId, that.ownerId);
   }
 
-
   @Override
   public String toString() {
     return "{" +
-      " id='" + getId() + "'" +
-      ", name='" + getName() + "'" +
-      ", address='" + getAddress() + "'" +
-      ", startTime='" + getStartTime() + "'" +
-      ", endTime='" + getEndTime() + "'" +
-      ", description='" + getDescription() + "'" +
-      ", image='" + getImage() + "'" +
-      ", status='" + getStatus() + "'" +
-      ", ownerId='" + getOwnerId() + "'" +
-      ", userEntity='" + getUserEntity() + "'" +
-      "}";
+        " id='" + getId() + "'" +
+        ", name='" + getName() + "'" +
+        ", address='" + getAddress() + "'" +
+        ", startTime='" + getStartTime() + "'" +
+        ", endTime='" + getEndTime() + "'" +
+        ", description='" + getDescription() + "'" +
+        ", image='" + getImage() + "'" +
+        ", status='" + getStatus() + "'" +
+        ", ownerId='" + getOwnerId() + "'" +
+        ", userEntity='" + getUserEntity() + "'" +
+        "}";
   }
 
   @Override

@@ -6,6 +6,7 @@ import com.capstone.parking.entity.UserEntity;
 import com.capstone.parking.service.ParkingSpaceService;
 import com.capstone.parking.utilities.ApaMessage;
 import java.util.Map;
+import java.sql.Timestamp;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,11 +38,20 @@ public class ParkingSpaceController {
       userId = getLoginUserId(request);
       String name = (String) body.get("name");
       String address = (String) body.get("address");
+      String description = (String) body.get("description");
+      String image = (String) body.get("image");
       String status = (String) body.get("status");
+      Timestamp startTime = new Timestamp((long) body.get("startTime"));
+      Timestamp endTime = new Timestamp((long) body.get("endTime"));
       parkingSpaceEntity.setId(id);
       parkingSpaceEntity.setName(name);
       parkingSpaceEntity.setAddress(address);
       parkingSpaceEntity.setStatus(status);
+      parkingSpaceEntity.setImage(image);
+      parkingSpaceEntity.setDescription(description);
+      parkingSpaceEntity.setStartTime(startTime);
+      parkingSpaceEntity.setEndTime(endTime);
+      System.out.println("name " + name);
     } catch (Exception e) {
       System.out.println("ParkingSpaceController: updateParkingSpace " + e.getMessage());
       return new ResponseEntity("cannot update parking space", HttpStatus.CONFLICT);
@@ -60,15 +70,18 @@ public class ParkingSpaceController {
       String address = (String) body.get("address");
       String image = (String) body.get("image");
       String description = (String) body.get("description");
+      Timestamp startTime = new Timestamp((long) body.get("startTime"));
+      Timestamp endTime = new Timestamp((long) body.get("endTime"));
       int userId = getLoginUserId(request);
       parkingSpaceEntity.setOwnerId(userId);
       parkingSpaceEntity.setName(name);
       parkingSpaceEntity.setAddress(address);
       parkingSpaceEntity.setDescription(description);
       parkingSpaceEntity.setImage(image);
+      parkingSpaceEntity.setStartTime(startTime);
+      parkingSpaceEntity.setEndTime(endTime);
       parkingSpaceEntity.setStatus(ApaStatus.ACTIVE_PARKING_SPACE);
       parkingSpaceEntity = parkingSpaceService.createParkingSpace(parkingSpaceEntity);
-
     } catch (Exception e) {
       System.out.println("ParkingSpaceController: register " + e.getMessage());
       return new ResponseEntity(new ApaMessage(e.getMessage()), HttpStatus.CONFLICT);

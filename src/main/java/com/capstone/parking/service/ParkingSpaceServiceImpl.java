@@ -139,7 +139,7 @@ public class ParkingSpaceServiceImpl implements ParkingSpaceService {
         System.out.println("ParkingSpaceService: updateParkingSpace " + e.getMessage());
         return new ResponseEntity(new ApaMessage(e.getMessage()), HttpStatus.CONFLICT);
       }
-      return new ResponseEntity("", HttpStatus.OK);
+      return new ResponseEntity(parkingSpaceEntity, HttpStatus.OK);
 
     } else {
       return new ResponseEntity("Cannot access this parking space", HttpStatus.FORBIDDEN);

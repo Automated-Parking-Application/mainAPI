@@ -139,6 +139,19 @@ public class ParkingSpaceController {
     return parkingSpaceService.getParkingLotAttendantByParkingId(id, userId);
   }
 
+  @DeleteMapping("/{id:[\\d]+}/user/{removedUserId:[\\d]+}")
+  public ResponseEntity removeParkingLotAttendant(@PathVariable("id") int id,
+      @PathVariable("removedUserId") int removedUserId,
+      HttpServletRequest request) {
+    int userId;
+    try {
+      userId = getLoginUserId(request);
+    } catch (Exception e) {
+      return new ResponseEntity(new ApaMessage(e.getMessage()), HttpStatus.CONFLICT);
+    }
+    return parkingSpaceService.removeParkingLotAttendant(id, removedUserId, userId);
+  }
+
   private int getLoginUserId(HttpServletRequest servletRequest) {
     UserEntity userEntity = (UserEntity) servletRequest.getAttribute("USER_INFO");
     return userEntity.getId();

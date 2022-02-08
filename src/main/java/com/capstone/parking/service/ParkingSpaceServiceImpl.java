@@ -214,4 +214,22 @@ public class ParkingSpaceServiceImpl implements ParkingSpaceService {
       return new ResponseEntity(e.getMessage(), HttpStatus.BAD_REQUEST);
     }
   }
+
+  @Override
+  public ResponseEntity removeParkingLotAttendant(int parkingId, int removedUserId, int userId) {
+    try {
+      if (checkIfHavingAdminPermission(parkingId, userId)) {
+        ParkingSpaceAttendantEntity disabledParkingSpaceAttendant = parkingSpaceAttendantRepository
+            .getById(new ParkingSpaceAttendantKey(removedUserId, parkingId));
+
+        disabledParkingSpaceAttendant.setStatus(ApaStatus.DEACTIVE_PARKING_SPACE_ATTENDANT);
+        parkingSpaceAttendantRepository.save(disabledParkingSpaceAttendant);
+
+        return new ResponseEntity("", HttpStatus.OK);
+      } else
+        return new ResponseEntity("Cannot access this parking space", HttpStatus.FORBIDDEN);
+    } catch (Exception e) {
+      return new ResponseEntity(e.getMessage(), HttpStatus.BAD_REQUEST);
+    }
+  }
 }

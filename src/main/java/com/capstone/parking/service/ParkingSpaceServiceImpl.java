@@ -5,17 +5,23 @@ import com.capstone.parking.constants.ApaStatus;
 import com.capstone.parking.entity.ParkingSpaceAttendantEntity;
 import com.capstone.parking.entity.ParkingSpaceAttendantKey;
 import com.capstone.parking.entity.ParkingSpaceEntity;
+import com.capstone.parking.entity.QrCodeEntity;
 import com.capstone.parking.entity.RoleEntity;
 import com.capstone.parking.entity.UserEntity;
 import com.capstone.parking.model.SMS;
 import com.capstone.parking.repository.ParkingSpaceAttendantRepository;
 import com.capstone.parking.repository.ParkingSpaceRepository;
+import com.capstone.parking.repository.QrCodeRepository;
 import com.capstone.parking.repository.RoleRepository;
 import com.capstone.parking.repository.UserRepository;
 import com.capstone.parking.utilities.ApaMessage;
 import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.sql.Timestamp;
+
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,17 +36,22 @@ public class ParkingSpaceServiceImpl implements ParkingSpaceService {
   private final BCryptPasswordEncoder passwordEncoder;
   private final RoleRepository roleRepository;
   private final PasswordSMSService passwordSmsService;
+  private final QRCodeService qrCodeService;
+  private final QrCodeRepository qrCodeRepository;
 
   @Autowired
   public ParkingSpaceServiceImpl(ParkingSpaceRepository parkingSpaceRepository, UserRepository userRepository,
       ParkingSpaceAttendantRepository parkingSpaceAttendantRepository, RoleRepository roleRepository,
-      BCryptPasswordEncoder passwordEncoder, PasswordSMSService passwordSmsService) {
+      BCryptPasswordEncoder passwordEncoder, PasswordSMSService passwordSmsService, QRCodeService qrCodeService,
+      QrCodeRepository qrCodeRepository) {
     this.parkingSpaceRepository = parkingSpaceRepository;
     this.userRepository = userRepository;
     this.parkingSpaceAttendantRepository = parkingSpaceAttendantRepository;
     this.passwordEncoder = passwordEncoder;
     this.roleRepository = roleRepository;
     this.passwordSmsService = passwordSmsService;
+    this.qrCodeService = qrCodeService;
+    this.qrCodeRepository = qrCodeRepository;
   }
 
   private static String generatePassword(int length) {
@@ -230,6 +241,51 @@ public class ParkingSpaceServiceImpl implements ParkingSpaceService {
         return new ResponseEntity("Cannot access this parking space", HttpStatus.FORBIDDEN);
     } catch (Exception e) {
       return new ResponseEntity(e.getMessage(), HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  @Override
+  public ResponseEntity requestQRcodes(int parkingId, int userId, int numberOfCode) throws Exception {
+    if (checkIfHavingAdminPermission(parkingId, userId)) {
+      IntStream.range(0, numberOfCode).forEach(i -> {
+        try {
+          long createdAt = System.currentTimeMillis();
+          JSONObject obj = new JSONObject();
+          obj.put("parking", parkingId);
+          obj.put("createdAt", createdAt);
+          byte[] code = qrCodeService.generateQRCode(obj.toString(), 500, 500);
+          QrCodeEntity qrCodeEntity = new QrCodeEntity();
+          qrCodeEntity.setCode(code);
+          qrCodeEntity.setParkingId(parkingId);
+          qrCodeEntity.setCreatedAt(new Timestamp(createdAt));
+          qrCodeEntity.setUpdatedAt(new Timestamp(createdAt));
+          qrCodeEntity.setStatus(ApaStatus.ACTIVE_QR_CODE);
+          qrCodeRepository.save(qrCodeEntity);
+
+        } catch (Exception e) {
+          System.out.println("Something went wrong " + e.getMessage());
+          throw new Error(e.getMessage());
+        }
+      });
+
+      return new ResponseEntity("", HttpStatus.OK);
+    } else {
+      return new ResponseEntity("Cannot access this parking space", HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  @Override
+  public ResponseEntity countQrCode(int parkingId, int userId) {
+    if (checkIfHavingAdminPermission(parkingId, userId)) {
+
+      try {
+        int codeCount = qrCodeRepository.countByParkingIdAndStatus(parkingId, ApaStatus.ACTIVE_QR_CODE);
+        return new ResponseEntity(codeCount, HttpStatus.OK);
+      } catch (Exception e) {
+        return new ResponseEntity(e.getMessage(), HttpStatus.CONFLICT);
+      }
+    } else {
+      return new ResponseEntity("Cannot access this parking space", HttpStatus.BAD_REQUEST);
     }
   }
 }

@@ -7,4 +7,6 @@ public class ApaStatus {
   public static final String DEACTIVE_PARKING_SPACE = "0";
   public static final String ACTIVE_PARKING_SPACE_ATTENDANT = "1";
   public static final String DEACTIVE_PARKING_SPACE_ATTENDANT = "0";
+  public static final String ACTIVE_QR_CODE = "1";
+  public static final String DEACTIVE_QR_CODE = "0";
 }

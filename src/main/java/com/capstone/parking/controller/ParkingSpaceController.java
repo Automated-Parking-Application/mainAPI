@@ -152,6 +152,43 @@ public class ParkingSpaceController {
     return parkingSpaceService.removeParkingLotAttendant(id, removedUserId, userId);
   }
 
+  @PostMapping("/{id:[\\d]+}/qr")
+  @Transactional
+  public ResponseEntity requestQRcodes(@PathVariable("id") int parkingId, @RequestBody Map<String, Object> body,
+      HttpServletRequest request) {
+    try {
+      int userId;
+      int numberOfCode;
+
+      try {
+        numberOfCode = (int) body.get("number");
+        userId = getLoginUserId(request);
+      } catch (Exception e) {
+        return new ResponseEntity(new ApaMessage(e.getMessage()), HttpStatus.CONFLICT);
+      }
+      return parkingSpaceService.requestQRcodes(parkingId, userId, numberOfCode);
+    } catch (Exception e) {
+      return new ResponseEntity(new ApaMessage(e.getMessage()), HttpStatus.CONFLICT);
+    }
+  }
+
+  @GetMapping("/{id:[\\d]+}/qr/count")
+  public ResponseEntity countQRCode(@PathVariable("id") int parkingId,
+      HttpServletRequest request) {
+    try {
+      int userId;
+
+      try {
+        userId = getLoginUserId(request);
+      } catch (Exception e) {
+        return new ResponseEntity(new ApaMessage(e.getMessage()), HttpStatus.CONFLICT);
+      }
+      return parkingSpaceService.countQrCode(parkingId, userId);
+    } catch (Exception e) {
+      return new ResponseEntity(new ApaMessage(e.getMessage()), HttpStatus.CONFLICT);
+    }
+  }
+
   private int getLoginUserId(HttpServletRequest servletRequest) {
     UserEntity userEntity = (UserEntity) servletRequest.getAttribute("USER_INFO");
     return userEntity.getId();

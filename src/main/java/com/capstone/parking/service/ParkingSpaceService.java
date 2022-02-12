@@ -19,4 +19,8 @@ public interface ParkingSpaceService {
 
   ResponseEntity removeParkingLotAttendant(int id, int removedUserId, int userId);
 
+  ResponseEntity requestQRcodes(int parkingId, int userId, int numberOfCode) throws Exception;
+
+  ResponseEntity countQrCode(int parkingId, int userId);
+
 }

@@ -31,7 +31,7 @@ public class PasswordSMSService {
         return false;
       }
     } catch (Exception e) {
-
+      System.out.println("Something went wrong" + e.getMessage());
       return false;
     }
     return true;

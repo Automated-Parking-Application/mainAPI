@@ -24,3 +24,10 @@ Run:
   ./mvnw spring-boot:run
 
 Service running at localhost:8080
+
+
+Frontend (Mobile) => Backend (Spring boot) -> HTTP method: GET (get information), POST (create information), PUT, PATCH (update information), DELETE
+Frontend -> backend (API Call)
+Request get parking attendant , get parking space
+Controller  ->  Service (parking attendant service, parking space service)   ->  Repository   (Table from database)  (thao tác với database) save , delete, update, get
+return ResponseEntity ()

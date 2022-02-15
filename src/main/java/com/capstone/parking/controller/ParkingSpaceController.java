@@ -164,10 +164,12 @@ public class ParkingSpaceController {
         numberOfCode = (int) body.get("number");
         userId = getLoginUserId(request);
       } catch (Exception e) {
+        System.out.println(e.getMessage());
         return new ResponseEntity(new ApaMessage(e.getMessage()), HttpStatus.CONFLICT);
       }
       return parkingSpaceService.requestQRcodes(parkingId, userId, numberOfCode);
     } catch (Exception e) {
+      System.out.println(e.getMessage());
       return new ResponseEntity(new ApaMessage(e.getMessage()), HttpStatus.CONFLICT);
     }
   }

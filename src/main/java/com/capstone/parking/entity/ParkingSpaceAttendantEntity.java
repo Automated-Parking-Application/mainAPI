@@ -1,15 +1,13 @@
 package com.capstone.parking.entity;
 
+import com.capstone.parking.constants.ApaStatus;
 import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.Objects;
-
 import javax.persistence.*;
 
-import com.capstone.parking.constants.ApaStatus;
-
 @Entity
-@Table(name = "parking_space_attendant")
+@Table(name = "parking_space_attendant",schema = "apa")
 public class ParkingSpaceAttendantEntity implements Serializable {
 
     @EmbeddedId

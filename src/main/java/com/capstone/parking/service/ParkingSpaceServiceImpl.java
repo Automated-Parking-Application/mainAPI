@@ -185,8 +185,8 @@ public class ParkingSpaceServiceImpl implements ParkingSpaceService {
         if (createdParkingSpaceAttendant != null) {
           ParkingSpaceAttendantEntity newParkingSpaceAttendant = new ParkingSpaceAttendantEntity(
               new ParkingSpaceAttendantKey(createdParkingSpaceAttendant.getId(), parkingId));
-          parkingSpaceAttendantRepository.save(newParkingSpaceAttendant);
-          return new ResponseEntity("Ok", HttpStatus.OK);
+          ParkingSpaceAttendantEntity res = parkingSpaceAttendantRepository.save(newParkingSpaceAttendant);
+          return new ResponseEntity(res, HttpStatus.OK);
         } else {
           return new ResponseEntity("Cannot create account from this phone number", HttpStatus.BAD_REQUEST);
         }
@@ -195,8 +195,8 @@ public class ParkingSpaceServiceImpl implements ParkingSpaceService {
           try {
             ParkingSpaceAttendantEntity newParkingSpaceAttendant = new ParkingSpaceAttendantEntity(
                 new ParkingSpaceAttendantKey(foundUser.getId(), parkingId));
-            parkingSpaceAttendantRepository.save(newParkingSpaceAttendant);
-            return new ResponseEntity("", HttpStatus.OK);
+            ParkingSpaceAttendantEntity res = parkingSpaceAttendantRepository.save(newParkingSpaceAttendant);
+            return new ResponseEntity(res, HttpStatus.OK);
           } catch (Exception e) {
             return new ResponseEntity(e.getMessage(), HttpStatus.BAD_REQUEST);
           }

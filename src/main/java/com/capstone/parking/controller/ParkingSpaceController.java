@@ -102,14 +102,14 @@ public class ParkingSpaceController {
   }
 
   @GetMapping("/")
-  public ResponseEntity getAllParkingSpaceByOwnerId(HttpServletRequest request) {
+  public ResponseEntity getAllParkingSpaceByOwnerIdOrByParkingLotAttendantId(HttpServletRequest request) {
     int ownerId;
     try {
       ownerId = getLoginUserId(request);
     } catch (Exception e) {
       return new ResponseEntity(new ApaMessage(e.getMessage()), HttpStatus.CONFLICT);
     }
-    return parkingSpaceService.getAllParkingSpaceByOwnerId(ownerId);
+    return parkingSpaceService.getAllParkingSpaceByOwnerIdOrByParkingLotAttendantId(ownerId);
   }
 
   @PostMapping("/{id:[\\d]+}/user")

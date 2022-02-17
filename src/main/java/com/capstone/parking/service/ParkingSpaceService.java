@@ -7,7 +7,7 @@ public interface ParkingSpaceService {
 
   ParkingSpaceEntity createParkingSpace(ParkingSpaceEntity parkingSpaceEntity);
 
-  ResponseEntity getAllParkingSpaceByOwnerId(int ownerId);
+  ResponseEntity getAllParkingSpaceByOwnerIdOrByParkingLotAttendantId(int ownerId);
 
   ResponseEntity deactivateParkingSpace(int id, int userId);
 

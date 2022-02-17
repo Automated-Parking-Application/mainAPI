@@ -1,10 +1,9 @@
 package com.capstone.parking.repository;
 
-import java.util.List;
-
 import com.capstone.parking.entity.ParkingSpaceEntity;
-
+import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
 public interface ParkingSpaceRepository extends JpaRepository<ParkingSpaceEntity, Integer> {
   @Override
@@ -13,4 +12,7 @@ public interface ParkingSpaceRepository extends JpaRepository<ParkingSpaceEntity
   List findAllByOwnerId(int ownerId);
 
   List findAllByOwnerIdAndStatus(int ownerId, String status);
+
+  // @Query("SELECT i from ParkingSpaceEntity i where i.id IN (SELECT r.)")
+  // List<ParkingSpaceEntity> getParkingSpaceOfParkingLotAttendant(String status, List<Integer> ids);
 }

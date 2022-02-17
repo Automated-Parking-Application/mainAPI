@@ -15,12 +15,11 @@ import com.capstone.parking.repository.QrCodeRepository;
 import com.capstone.parking.repository.RoleRepository;
 import com.capstone.parking.repository.UserRepository;
 import com.capstone.parking.utilities.ApaMessage;
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import java.sql.Timestamp;
-
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -102,11 +101,23 @@ public class ParkingSpaceServiceImpl implements ParkingSpaceService {
   }
 
   @Override
-  public ResponseEntity getAllParkingSpaceByOwnerId(int ownerId) {
+  public ResponseEntity getAllParkingSpaceByOwnerIdOrByParkingLotAttendantId(int ownerId) {
     List<ParkingSpaceEntity> parkingSpaces;
     try {
-      parkingSpaces = parkingSpaceRepository.findAllByOwnerIdAndStatus(ownerId,
-          (String) ApaStatus.ACTIVE_PARKING_SPACE);
+      UserEntity user = userRepository.getById(ownerId);
+      System.out.println("hello " + user.getRoleByRoleId().getName());
+      if (user.getRoleByRoleId().getName().equals(ApaRole.ROLE_ADMIN)) {
+        parkingSpaces = parkingSpaceRepository.findAllByOwnerIdAndStatus(ownerId,
+            (String) ApaStatus.ACTIVE_PARKING_SPACE);
+      } else if (user.getRoleByRoleId().getName().equals(ApaRole.ROLE_PARKING_ATTENDANTS)) {
+        List<ParkingSpaceAttendantEntity> parkingSpacesAttendants = parkingSpaceAttendantRepository
+            .findAllByUserAndStatus(user,
+                (String) ApaStatus.ACTIVE_PARKING_SPACE);
+        parkingSpaces = parkingSpacesAttendants.stream().map(ParkingSpaceAttendantEntity::getParkingSpace)
+            .collect(Collectors.toList());
+      } else {
+        return new ResponseEntity<>(new ApaMessage("Something went wrong"), HttpStatus.BAD_REQUEST);
+      }
     } catch (Exception e) {
       return new ResponseEntity<>(new ApaMessage(e.getMessage()), HttpStatus.BAD_REQUEST);
     }

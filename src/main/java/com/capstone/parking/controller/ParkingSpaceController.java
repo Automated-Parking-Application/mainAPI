@@ -54,7 +54,7 @@ public class ParkingSpaceController {
       System.out.println("name " + name);
     } catch (Exception e) {
       System.out.println("ParkingSpaceController: updateParkingSpace " + e.getMessage());
-      return new ResponseEntity("cannot update parking space", HttpStatus.CONFLICT);
+      return new ResponseEntity<>("cannot update parking space", HttpStatus.CONFLICT);
     }
     return parkingSpaceService.updateParkingSpace(parkingSpaceEntity, userId);
 
@@ -84,9 +84,9 @@ public class ParkingSpaceController {
       parkingSpaceEntity = parkingSpaceService.createParkingSpace(parkingSpaceEntity);
     } catch (Exception e) {
       System.out.println("ParkingSpaceController: register " + e.getMessage());
-      return new ResponseEntity(new ApaMessage(e.getMessage()), HttpStatus.CONFLICT);
+      return new ResponseEntity<>(new ApaMessage(e.getMessage()), HttpStatus.CONFLICT);
     }
-    return new ResponseEntity(parkingSpaceEntity, HttpStatus.OK);
+    return new ResponseEntity<>(parkingSpaceEntity, HttpStatus.OK);
   }
 
   @DeleteMapping("/{id:[\\d]+}")
@@ -96,7 +96,7 @@ public class ParkingSpaceController {
     try {
       userId = getLoginUserId(servletRequest);
     } catch (Exception e) {
-      return new ResponseEntity(new ApaMessage(e.getMessage()), HttpStatus.CONFLICT);
+      return new ResponseEntity<>(new ApaMessage(e.getMessage()), HttpStatus.CONFLICT);
     }
     return parkingSpaceService.deactivateParkingSpace(id, userId);
   }
@@ -107,7 +107,7 @@ public class ParkingSpaceController {
     try {
       ownerId = getLoginUserId(request);
     } catch (Exception e) {
-      return new ResponseEntity(new ApaMessage(e.getMessage()), HttpStatus.CONFLICT);
+      return new ResponseEntity<>(new ApaMessage(e.getMessage()), HttpStatus.CONFLICT);
     }
     return parkingSpaceService.getAllParkingSpaceByOwnerIdOrByParkingLotAttendantId(ownerId);
   }
@@ -122,7 +122,7 @@ public class ParkingSpaceController {
       parkingSpaceAttendantPhoneNumber = (String) body.get("phoneNumber");
       userId = getLoginUserId(request);
     } catch (Exception e) {
-      return new ResponseEntity(new ApaMessage(e.getMessage()), HttpStatus.CONFLICT);
+      return new ResponseEntity<>(new ApaMessage(e.getMessage()), HttpStatus.CONFLICT);
     }
     return parkingSpaceService.addingParkingSpaceAttendant(id, userId, parkingSpaceAttendantPhoneNumber);
   }
@@ -134,7 +134,7 @@ public class ParkingSpaceController {
     try {
       userId = getLoginUserId(request);
     } catch (Exception e) {
-      return new ResponseEntity(new ApaMessage(e.getMessage()), HttpStatus.CONFLICT);
+      return new ResponseEntity<>(new ApaMessage(e.getMessage()), HttpStatus.CONFLICT);
     }
     return parkingSpaceService.getParkingLotAttendantByParkingId(id, userId);
   }
@@ -147,7 +147,7 @@ public class ParkingSpaceController {
     try {
       userId = getLoginUserId(request);
     } catch (Exception e) {
-      return new ResponseEntity(new ApaMessage(e.getMessage()), HttpStatus.CONFLICT);
+      return new ResponseEntity<>(new ApaMessage(e.getMessage()), HttpStatus.CONFLICT);
     }
     return parkingSpaceService.removeParkingLotAttendant(id, removedUserId, userId);
   }
@@ -165,12 +165,12 @@ public class ParkingSpaceController {
         userId = getLoginUserId(request);
       } catch (Exception e) {
         System.out.println(e.getMessage());
-        return new ResponseEntity(new ApaMessage(e.getMessage()), HttpStatus.CONFLICT);
+        return new ResponseEntity<>(new ApaMessage(e.getMessage()), HttpStatus.CONFLICT);
       }
       return parkingSpaceService.requestQRcodes(parkingId, userId, numberOfCode);
     } catch (Exception e) {
       System.out.println(e.getMessage());
-      return new ResponseEntity(new ApaMessage(e.getMessage()), HttpStatus.CONFLICT);
+      return new ResponseEntity<>(new ApaMessage(e.getMessage()), HttpStatus.CONFLICT);
     }
   }
 
@@ -179,15 +179,31 @@ public class ParkingSpaceController {
       HttpServletRequest request) {
     try {
       int userId;
-
       try {
         userId = getLoginUserId(request);
       } catch (Exception e) {
-        return new ResponseEntity(new ApaMessage(e.getMessage()), HttpStatus.CONFLICT);
+        return new ResponseEntity<>(new ApaMessage(e.getMessage()), HttpStatus.CONFLICT);
       }
       return parkingSpaceService.countQrCode(parkingId, userId);
     } catch (Exception e) {
-      return new ResponseEntity(new ApaMessage(e.getMessage()), HttpStatus.CONFLICT);
+      return new ResponseEntity<>(new ApaMessage(e.getMessage()), HttpStatus.CONFLICT);
+    }
+  }
+
+  // Check in API
+  @PostMapping("/{id:[\\d]+}/check-in")
+  @Transactional
+  public ResponseEntity checkIn(@PathVariable("id") int parkingId, @RequestBody Map<String, Object> body,
+      HttpServletRequest request) {
+    try {
+      String plateNumber = (String) body.get("plateNumber");
+      String attachment = (String) body.get("attachment");
+      String vehicleType = (String) body.get("vehicleType");
+      int userId;
+      userId = getLoginUserId(request);
+      return parkingSpaceService.checkIn(parkingId, userId, vehicleType, plateNumber, attachment);
+    } catch (Exception e) {
+      return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT);
     }
   }
 

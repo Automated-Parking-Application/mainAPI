@@ -2,18 +2,25 @@ package com.capstone.parking.service;
 
 import com.capstone.parking.constants.ApaRole;
 import com.capstone.parking.constants.ApaStatus;
+import com.capstone.parking.entity.ParkingReservationActivityEntity;
+import com.capstone.parking.entity.ParkingReservationActivityKey;
+import com.capstone.parking.entity.ParkingReservationEntity;
 import com.capstone.parking.entity.ParkingSpaceAttendantEntity;
 import com.capstone.parking.entity.ParkingSpaceAttendantKey;
 import com.capstone.parking.entity.ParkingSpaceEntity;
 import com.capstone.parking.entity.QrCodeEntity;
 import com.capstone.parking.entity.RoleEntity;
 import com.capstone.parking.entity.UserEntity;
+import com.capstone.parking.entity.VehicleEntity;
 import com.capstone.parking.model.SMS;
+import com.capstone.parking.repository.ParkingReservationActivityRepository;
+import com.capstone.parking.repository.ParkingReservationRepository;
 import com.capstone.parking.repository.ParkingSpaceAttendantRepository;
 import com.capstone.parking.repository.ParkingSpaceRepository;
 import com.capstone.parking.repository.QrCodeRepository;
 import com.capstone.parking.repository.RoleRepository;
 import com.capstone.parking.repository.UserRepository;
+import com.capstone.parking.repository.VehicleRepository;
 import com.capstone.parking.utilities.ApaMessage;
 import java.sql.Timestamp;
 import java.util.List;
@@ -37,12 +44,16 @@ public class ParkingSpaceServiceImpl implements ParkingSpaceService {
   private final PasswordSMSService passwordSmsService;
   private final QRCodeService qrCodeService;
   private final QrCodeRepository qrCodeRepository;
+  private final VehicleRepository vehicleRepository;
+  private final ParkingReservationRepository parkingReservationRepository;
+  private final ParkingReservationActivityRepository parkingReservationActivityRepository;
 
   @Autowired
   public ParkingSpaceServiceImpl(ParkingSpaceRepository parkingSpaceRepository, UserRepository userRepository,
       ParkingSpaceAttendantRepository parkingSpaceAttendantRepository, RoleRepository roleRepository,
       BCryptPasswordEncoder passwordEncoder, PasswordSMSService passwordSmsService, QRCodeService qrCodeService,
-      QrCodeRepository qrCodeRepository) {
+      QrCodeRepository qrCodeRepository, VehicleRepository vehicleRepository,
+      ParkingReservationRepository parkingReservationRepository, ParkingReservationActivityRepository parkingReservationActivityRepository) {
     this.parkingSpaceRepository = parkingSpaceRepository;
     this.userRepository = userRepository;
     this.parkingSpaceAttendantRepository = parkingSpaceAttendantRepository;
@@ -51,6 +62,9 @@ public class ParkingSpaceServiceImpl implements ParkingSpaceService {
     this.passwordSmsService = passwordSmsService;
     this.qrCodeService = qrCodeService;
     this.qrCodeRepository = qrCodeRepository;
+    this.vehicleRepository = vehicleRepository;
+    this.parkingReservationRepository = parkingReservationRepository;
+    this.parkingReservationActivityRepository = parkingReservationActivityRepository;
   }
 
   private static String generatePassword(int length) {
@@ -138,11 +152,11 @@ public class ParkingSpaceServiceImpl implements ParkingSpaceService {
         parkingSpaceEntity.setStatus(ApaStatus.DEACTIVE_PARKING_SPACE);
         deactiveParkingSpaceEntity = parkingSpaceRepository.save(parkingSpaceEntity);
       } catch (Exception e) {
-        return new ResponseEntity(new ApaMessage(e.getMessage()), HttpStatus.CONFLICT);
+        return new ResponseEntity<>(new ApaMessage(e.getMessage()), HttpStatus.CONFLICT);
       }
-      return new ResponseEntity("", HttpStatus.OK);
+      return new ResponseEntity<>("", HttpStatus.OK);
     } else {
-      return new ResponseEntity("Cannot access this parking space", HttpStatus.FORBIDDEN);
+      return new ResponseEntity<>("Cannot access this parking space", HttpStatus.FORBIDDEN);
     }
   }
 
@@ -159,12 +173,12 @@ public class ParkingSpaceServiceImpl implements ParkingSpaceService {
         parkingSpaceRepository.save(parkingSpaceEntity);
       } catch (Exception e) {
         System.out.println("ParkingSpaceService: updateParkingSpace " + e.getMessage());
-        return new ResponseEntity(new ApaMessage(e.getMessage()), HttpStatus.CONFLICT);
+        return new ResponseEntity<>(new ApaMessage(e.getMessage()), HttpStatus.CONFLICT);
       }
-      return new ResponseEntity(parkingSpaceEntity, HttpStatus.OK);
+      return new ResponseEntity<>(parkingSpaceEntity, HttpStatus.OK);
 
     } else {
-      return new ResponseEntity("Cannot access this parking space", HttpStatus.FORBIDDEN);
+      return new ResponseEntity<>("Cannot access this parking space", HttpStatus.FORBIDDEN);
     }
   }
 
@@ -172,8 +186,30 @@ public class ParkingSpaceServiceImpl implements ParkingSpaceService {
     try {
       ParkingSpaceEntity searchParkingSpace = parkingSpaceRepository.getById(parkingId);
       UserEntity user = userRepository.getById(userId);
-      return searchParkingSpace != null || searchParkingSpace.getOwnerId() == user.getId()
+      return (searchParkingSpace != null && searchParkingSpace.getOwnerId() == user.getId())
           || user.getRoleByRoleId().getName().equals(ApaRole.ROLE_SUPERADMMIN);
+    } catch (Exception e) {
+      return false;
+    }
+  }
+
+  private boolean checkIfHavingParkingLotAttendantPermission(int parkingId, int userId) {
+    try {
+      List<ParkingSpaceAttendantEntity> foundParkingSpaceAttendant = parkingSpaceAttendantRepository
+          .findAllByIdAndStatus(
+              new ParkingSpaceAttendantKey(userId, parkingId), ApaStatus.ACTIVE_PARKING_SPACE_ATTENDANT);
+      return !foundParkingSpaceAttendant.isEmpty();
+    } catch (Exception e) {
+      return false;
+    }
+  }
+
+  private boolean checkExistedParkedVehicle(String plateNumber) {
+    try {
+      VehicleEntity vehicle = vehicleRepository.findTop1ByPlateNumber(plateNumber);
+      List<ParkingReservationEntity> existedReservation = parkingReservationRepository
+          .findAllByVehicleEntityAndStatus(vehicle, ApaStatus.CHECK_IN);
+      return !existedReservation.isEmpty();
     } catch (Exception e) {
       return false;
     }
@@ -197,9 +233,9 @@ public class ParkingSpaceServiceImpl implements ParkingSpaceService {
           ParkingSpaceAttendantEntity newParkingSpaceAttendant = new ParkingSpaceAttendantEntity(
               new ParkingSpaceAttendantKey(createdParkingSpaceAttendant.getId(), parkingId));
           ParkingSpaceAttendantEntity res = parkingSpaceAttendantRepository.save(newParkingSpaceAttendant);
-          return new ResponseEntity(res, HttpStatus.OK);
+          return new ResponseEntity<>(res, HttpStatus.OK);
         } else {
-          return new ResponseEntity("Cannot create account from this phone number", HttpStatus.BAD_REQUEST);
+          return new ResponseEntity<>("Cannot create account from this phone number", HttpStatus.BAD_REQUEST);
         }
       } else {
         if (foundUser.getRoleByRoleId().getName().equals(ApaRole.ROLE_PARKING_ATTENDANTS)) {
@@ -207,16 +243,16 @@ public class ParkingSpaceServiceImpl implements ParkingSpaceService {
             ParkingSpaceAttendantEntity newParkingSpaceAttendant = new ParkingSpaceAttendantEntity(
                 new ParkingSpaceAttendantKey(foundUser.getId(), parkingId));
             ParkingSpaceAttendantEntity res = parkingSpaceAttendantRepository.save(newParkingSpaceAttendant);
-            return new ResponseEntity(res, HttpStatus.OK);
+            return new ResponseEntity<>(res, HttpStatus.OK);
           } catch (Exception e) {
-            return new ResponseEntity(e.getMessage(), HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
           }
         } else {
-          return new ResponseEntity("Cannot add this phone number to parking space", HttpStatus.BAD_REQUEST);
+          return new ResponseEntity<>("Cannot add this phone number to parking space", HttpStatus.BAD_REQUEST);
         }
       }
     } else {
-      return new ResponseEntity("Cannot access this parking space", HttpStatus.FORBIDDEN);
+      return new ResponseEntity<>("Cannot access this parking space", HttpStatus.FORBIDDEN);
     }
   }
 
@@ -229,11 +265,11 @@ public class ParkingSpaceServiceImpl implements ParkingSpaceService {
             .findAllByParkingSpaceAndStatus(parkingSpace, ApaStatus.ACTIVE_PARKING_SPACE_ATTENDANT).stream()
             .filter(p -> p.getUser().getStatus().equals(ApaStatus.USER_ENABLE)).collect(Collectors.toList());
 
-        return new ResponseEntity(parkingLotAttendants, HttpStatus.OK);
+        return new ResponseEntity<>(parkingLotAttendants, HttpStatus.OK);
       } else
-        return new ResponseEntity("Cannot access this parking space", HttpStatus.FORBIDDEN);
+        return new ResponseEntity<>("Cannot access this parking space", HttpStatus.FORBIDDEN);
     } catch (Exception e) {
-      return new ResponseEntity(e.getMessage(), HttpStatus.BAD_REQUEST);
+      return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -247,11 +283,11 @@ public class ParkingSpaceServiceImpl implements ParkingSpaceService {
         disabledParkingSpaceAttendant.setStatus(ApaStatus.DEACTIVE_PARKING_SPACE_ATTENDANT);
         parkingSpaceAttendantRepository.save(disabledParkingSpaceAttendant);
 
-        return new ResponseEntity("", HttpStatus.OK);
+        return new ResponseEntity<>("", HttpStatus.OK);
       } else
-        return new ResponseEntity("Cannot access this parking space", HttpStatus.FORBIDDEN);
+        return new ResponseEntity<>("Cannot access this parking space", HttpStatus.FORBIDDEN);
     } catch (Exception e) {
-      return new ResponseEntity(e.getMessage(), HttpStatus.BAD_REQUEST);
+      return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -279,24 +315,68 @@ public class ParkingSpaceServiceImpl implements ParkingSpaceService {
         }
       });
 
-      return new ResponseEntity("", HttpStatus.OK);
+      return new ResponseEntity<>("", HttpStatus.OK);
     } else {
-      return new ResponseEntity("Cannot access this parking space", HttpStatus.BAD_REQUEST);
+      return new ResponseEntity<>("Cannot access this parking space", HttpStatus.BAD_REQUEST);
     }
   }
 
   @Override
   public ResponseEntity countQrCode(int parkingId, int userId) {
     if (checkIfHavingAdminPermission(parkingId, userId)) {
-
       try {
         int codeCount = qrCodeRepository.countByParkingIdAndStatus(parkingId, ApaStatus.ACTIVE_QR_CODE);
-        return new ResponseEntity(codeCount, HttpStatus.OK);
+        return new ResponseEntity<>(codeCount, HttpStatus.OK);
       } catch (Exception e) {
-        return new ResponseEntity(e.getMessage(), HttpStatus.CONFLICT);
+        return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT);
       }
     } else {
-      return new ResponseEntity("Cannot access this parking space", HttpStatus.BAD_REQUEST);
+      return new ResponseEntity<>("Cannot access this parking space", HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  @Override
+  public ResponseEntity checkIn(int parkingId, int userId, String vehicleType, String plateNumber, String attachment) {
+
+    if (checkIfHavingParkingLotAttendantPermission(parkingId, userId)) {
+      if (checkExistedParkedVehicle(plateNumber)) {
+        return new ResponseEntity<>("This vehicle is already parked", HttpStatus.BAD_REQUEST);
+      }
+      List<QrCodeEntity> codeList = qrCodeRepository.getAllAvailableQrCodeFromParkingId(parkingId);
+      VehicleEntity existingVehicle;
+      VehicleEntity newVehicle = new VehicleEntity();
+      ParkingReservationEntity parkingReservation = new ParkingReservationEntity();
+
+      Random rand = new Random();
+      QrCodeEntity randomCode = codeList.get(rand.nextInt(codeList.size()));
+
+      existingVehicle = vehicleRepository.findTop1ByPlateNumber(plateNumber);
+      ParkingSpaceEntity parking = parkingSpaceRepository.getById(parkingId);
+
+      if (existingVehicle == null) {
+        newVehicle.setPlateNumber(plateNumber);
+        newVehicle.setVehicleType(vehicleType);
+        parkingReservation.setVehicleId(vehicleRepository.save(newVehicle).getId());
+      }
+
+      parkingReservation.setAttachment(attachment);
+      parkingReservation.setStatus(ApaStatus.CHECK_IN);
+      parkingReservation.setCodeId(randomCode.getId());
+      parkingReservation.setParkingId(parkingId);
+      parkingReservation.setQrCodeEntity(randomCode);
+      parkingReservation.setParkingSpaceEntity(parking);
+
+      ParkingReservationEntity res = parkingReservationRepository
+          .getById(parkingReservationRepository.save(parkingReservation).getId());
+
+      ParkingReservationActivityKey key = new ParkingReservationActivityKey(userId, res.getId());
+      ParkingReservationActivityEntity activityEntity = new ParkingReservationActivityEntity(key, ApaStatus.CHECK_IN, new Timestamp(System.currentTimeMillis()));
+
+      parkingReservationActivityRepository.save(activityEntity);
+
+      return new ResponseEntity<>(res, HttpStatus.OK);
+    } else {
+      return new ResponseEntity<>("Cannot access this parking space", HttpStatus.BAD_REQUEST);
     }
   }
 }

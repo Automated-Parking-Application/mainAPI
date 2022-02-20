@@ -15,4 +15,6 @@ public interface ParkingSpaceAttendantRepository
   List<ParkingSpaceAttendantEntity> findAllByParkingSpaceAndStatus(ParkingSpaceEntity parkingSpace, String status);
 
   List<ParkingSpaceAttendantEntity> findAllByUserAndStatus(UserEntity user, String status);
+
+  List<ParkingSpaceAttendantEntity> findAllByIdAndStatus(ParkingSpaceAttendantKey key, String status);
 }

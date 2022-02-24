@@ -339,10 +339,15 @@ public class ParkingSpaceServiceImpl implements ParkingSpaceService {
   public ResponseEntity checkIn(int parkingId, int userId, String vehicleType, String plateNumber, String attachment) {
 
     if (checkIfHavingParkingLotAttendantPermission(parkingId, userId)) {
+      try {
       if (checkExistedParkedVehicle(plateNumber)) {
         return new ResponseEntity<>("This vehicle is already parked", HttpStatus.BAD_REQUEST);
       }
       List<QrCodeEntity> codeList = qrCodeRepository.getAllAvailableQrCodeFromParkingId(parkingId);
+
+      if (codeList.isEmpty()) {
+        return new ResponseEntity<>("This parking space is full", HttpStatus.NOT_ACCEPTABLE);
+      }
       VehicleEntity existingVehicle;
       VehicleEntity newVehicle = new VehicleEntity();
       ParkingReservationEntity parkingReservation = new ParkingReservationEntity();
@@ -375,6 +380,10 @@ public class ParkingSpaceServiceImpl implements ParkingSpaceService {
       parkingReservationActivityRepository.save(activityEntity);
 
       return new ResponseEntity<>(res, HttpStatus.OK);
+    } catch (Exception e) {
+      System.out.println("ParkingSpaceServiceImpl: CheckIn: " + e.getMessage());
+      return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT);
+    }
     } else {
       return new ResponseEntity<>("Cannot access this parking space", HttpStatus.BAD_REQUEST);
     }

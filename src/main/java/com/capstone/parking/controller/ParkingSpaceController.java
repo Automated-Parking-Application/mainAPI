@@ -203,6 +203,7 @@ public class ParkingSpaceController {
       userId = getLoginUserId(request);
       return parkingSpaceService.checkIn(parkingId, userId, vehicleType, plateNumber, attachment);
     } catch (Exception e) {
+      System.out.println("ParkingSpaceController: CheckIn: " + e.getMessage());
       return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT);
     }
   }

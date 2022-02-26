@@ -22,6 +22,7 @@ import com.capstone.parking.repository.RoleRepository;
 import com.capstone.parking.repository.UserRepository;
 import com.capstone.parking.repository.VehicleRepository;
 import com.capstone.parking.utilities.ApaMessage;
+import com.capstone.parking.wrapper.ParkingReservationResponse;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Random;
@@ -323,7 +324,7 @@ public class ParkingSpaceServiceImpl implements ParkingSpaceService {
 
   @Override
   public ResponseEntity countQrCode(int parkingId, int userId) {
-    if (checkIfHavingAdminPermission(parkingId, userId)) {
+    if (checkIfHavingAdminPermission(parkingId, userId) || checkIfHavingParkingLotAttendantPermission(parkingId, userId)) {
       try {
         int codeCount = qrCodeRepository.countByParkingIdAndStatus(parkingId, ApaStatus.ACTIVE_QR_CODE);
         return new ResponseEntity<>(codeCount, HttpStatus.OK);
@@ -388,4 +389,17 @@ public class ParkingSpaceServiceImpl implements ParkingSpaceService {
       return new ResponseEntity<>("Cannot access this parking space", HttpStatus.BAD_REQUEST);
     }
   }
+
+    @Override
+    public ResponseEntity getParkingReservationById(int parkingId, int parkingReservationId, int userId) {
+      if (checkIfHavingParkingLotAttendantPermission(parkingId, userId)) {
+        ParkingReservationEntity parkingRes = parkingReservationRepository
+          .getById(parkingReservationId);
+        List<ParkingReservationActivityEntity> activityEntity = parkingReservationActivityRepository.findAllByParkingReservationEntity(parkingRes);
+        ParkingReservationResponse res = new ParkingReservationResponse(parkingRes, activityEntity);
+          return new ResponseEntity<>(res, HttpStatus.OK);
+      } else {
+        return new ResponseEntity<>("Cannot access this parking reservation", HttpStatus.BAD_REQUEST);
+      }
+    }
 }

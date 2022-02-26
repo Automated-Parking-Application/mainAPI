@@ -26,4 +26,6 @@ public interface ParkingSpaceService {
 
   ResponseEntity checkIn(int parkingId, int userId, String vehicleType, String plateNumber, String attachment);
 
+  ResponseEntity getParkingReservationById(int parkingId, int parkingReservationId, int userId);
+
 }

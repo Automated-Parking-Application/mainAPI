@@ -2,16 +2,14 @@ package com.capstone.parking.entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
+import java.io.Serializable;
+import java.util.Objects;
 import javax.persistence.*;
 
-import java.io.Serializable;
-import java.sql.Timestamp;
-import java.util.Objects;
-import java.util.Set;
 
 @Entity
 @Table(name = "parking_reservation",schema = "apa")
+@JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
 public class ParkingReservationEntity implements Serializable{
   private int id;
   private String attachment;

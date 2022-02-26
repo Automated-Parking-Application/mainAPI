@@ -5,8 +5,8 @@ import com.capstone.parking.entity.ParkingSpaceEntity;
 import com.capstone.parking.entity.UserEntity;
 import com.capstone.parking.service.ParkingSpaceService;
 import com.capstone.parking.utilities.ApaMessage;
-import java.util.Map;
 import java.sql.Timestamp;
+import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -205,6 +205,24 @@ public class ParkingSpaceController {
     } catch (Exception e) {
       System.out.println("ParkingSpaceController: CheckIn: " + e.getMessage());
       return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT);
+    }
+  }
+
+  @GetMapping("/{id:[\\d]+}/parking-reservation/{resId:[\\d]+}")
+  public ResponseEntity getParkingReservationById(@PathVariable("id") int parkingId, @PathVariable("resId") int parkingReservationId, HttpServletRequest request) {
+    try {
+      int userId;
+
+      try {
+        userId = getLoginUserId(request);
+      } catch (Exception e) {
+        System.out.println(e.getMessage());
+        return new ResponseEntity<>(new ApaMessage(e.getMessage()), HttpStatus.CONFLICT);
+      }
+      return parkingSpaceService.getParkingReservationById(parkingId, parkingReservationId, userId);
+    } catch (Exception e) {
+      System.out.println(e.getMessage());
+      return new ResponseEntity<>(new ApaMessage(e.getMessage()), HttpStatus.CONFLICT);
     }
   }
 

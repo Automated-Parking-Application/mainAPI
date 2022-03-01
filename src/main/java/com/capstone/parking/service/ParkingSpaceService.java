@@ -23,9 +23,10 @@ public interface ParkingSpaceService {
 
   ResponseEntity countQrCode(int parkingId, int userId);
 
-
   ResponseEntity checkIn(int parkingId, int userId, String vehicleType, String plateNumber, String attachment);
 
   ResponseEntity getParkingReservationById(int parkingId, int parkingReservationId, int userId);
+
+  ResponseEntity getParkingReservationByCode(int parkingId, String code, int userId);
 
 }

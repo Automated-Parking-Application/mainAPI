@@ -209,7 +209,8 @@ public class ParkingSpaceController {
   }
 
   @GetMapping("/{id:[\\d]+}/parking-reservation/{resId:[\\d]+}")
-  public ResponseEntity getParkingReservationById(@PathVariable("id") int parkingId, @PathVariable("resId") int parkingReservationId, HttpServletRequest request) {
+  public ResponseEntity getParkingReservationById(@PathVariable("id") int parkingId,
+      @PathVariable("resId") int parkingReservationId, HttpServletRequest request) {
     try {
       int userId;
 
@@ -220,6 +221,27 @@ public class ParkingSpaceController {
         return new ResponseEntity<>(new ApaMessage(e.getMessage()), HttpStatus.CONFLICT);
       }
       return parkingSpaceService.getParkingReservationById(parkingId, parkingReservationId, userId);
+    } catch (Exception e) {
+      System.out.println(e.getMessage());
+      return new ResponseEntity<>(new ApaMessage(e.getMessage()), HttpStatus.CONFLICT);
+    }
+  }
+
+  @GetMapping("/{id:[\\d]+}/parking-reservation")
+  public ResponseEntity getParkingReservationByCode(@PathVariable("id") int parkingId,
+      @RequestBody Map<String, Object> body,
+      HttpServletRequest request) {
+    try {
+      int userId;
+      String code;
+      try {
+        code = (String) body.get("code");
+        userId = getLoginUserId(request);
+      } catch (Exception e) {
+        System.out.println(e.getMessage());
+        return new ResponseEntity<>(new ApaMessage(e.getMessage()), HttpStatus.CONFLICT);
+      }
+      return parkingSpaceService.getParkingReservationByCode(parkingId, code, userId);
     } catch (Exception e) {
       System.out.println(e.getMessage());
       return new ResponseEntity<>(new ApaMessage(e.getMessage()), HttpStatus.CONFLICT);

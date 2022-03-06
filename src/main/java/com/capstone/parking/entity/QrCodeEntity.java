@@ -16,6 +16,7 @@ import javax.persistence.*;
 public class QrCodeEntity implements Serializable {
   private int id;
   private byte[] code;
+  private String externalId;
   private Timestamp createdAt;
   private Timestamp updatedAt;
   private String status;
@@ -43,8 +44,28 @@ public class QrCodeEntity implements Serializable {
     this.status = status;
   }
 
+
+  public String getExternalId() {
+    return this.externalId;
+  }
+
+  public void setExternalId(String externalId) {
+    this.externalId = externalId;
+  }
+
+  public QrCodeEntity externalId(String externalId) {
+    setExternalId(externalId);
+    return this;
+  }
+
+  public QrCodeEntity parkingId(int parkingId) {
+    setParkingId(parkingId);
+    return this;
+  }
+
+
   @Basic
-  @Column(name = "code")
+  @Column(name = "code", columnDefinition="LONGBLOB")
   public byte[] getCode() {
     return code;
   }

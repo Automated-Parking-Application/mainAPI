@@ -2,6 +2,7 @@ package com.capstone.parking.controller;
 
 import com.capstone.parking.constants.ApaStatus;
 import com.capstone.parking.entity.ParkingSpaceEntity;
+import com.capstone.parking.entity.QrCodeEntity;
 import com.capstone.parking.entity.UserEntity;
 import com.capstone.parking.service.ParkingSpaceService;
 import com.capstone.parking.utilities.ApaMessage;
@@ -11,6 +12,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -227,25 +229,30 @@ public class ParkingSpaceController {
     }
   }
 
-  @GetMapping("/{id:[\\d]+}/parking-reservation")
-  public ResponseEntity getParkingReservationByCode(@PathVariable("id") int parkingId,
+  @PostMapping("/{id:[\\d]+}/parking-reservation")
+  public ResponseEntity getParkingReservationByExternalId(@PathVariable("id") int parkingId,
       @RequestBody Map<String, Object> body,
       HttpServletRequest request) {
     try {
       int userId;
-      String code;
+      String externalId;
       try {
-        code = (String) body.get("code");
+        externalId = (String) body.get("externalId");
         userId = getLoginUserId(request);
       } catch (Exception e) {
         System.out.println(e.getMessage());
-        return new ResponseEntity<>(new ApaMessage(e.getMessage()), HttpStatus.CONFLICT);
+        return new ResponseEntity<>(new ApaMessage(e.getMessage()), HttpStatus.BAD_REQUEST);
       }
-      return parkingSpaceService.getParkingReservationByCode(parkingId, code, userId);
+      return parkingSpaceService.getParkingReservationByExternalId(parkingId, externalId, userId);
     } catch (Exception e) {
-      System.out.println(e.getMessage());
       return new ResponseEntity<>(new ApaMessage(e.getMessage()), HttpStatus.CONFLICT);
     }
+  }
+
+  @GetMapping("/qr-code/{id:[\\d]+}")
+  public ResponseEntity<byte[]> showQRCode(@PathVariable("id") int codeId) {
+    QrCodeEntity qrCode = parkingSpaceService.getQrCodeById(codeId);
+    return ResponseEntity.ok().contentType(MediaType.IMAGE_PNG).body(qrCode.getCode());
   }
 
   private int getLoginUserId(HttpServletRequest servletRequest) {

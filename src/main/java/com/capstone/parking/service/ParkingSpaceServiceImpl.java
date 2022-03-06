@@ -300,17 +300,19 @@ public class ParkingSpaceServiceImpl implements ParkingSpaceService {
         try {
           long createdAt = System.currentTimeMillis();
           JSONObject obj = new JSONObject();
+          String newCrypt = generatePassword(8);
           obj.put("parking", parkingId);
           obj.put("createdAt", createdAt);
+          obj.put("parkingReservation", newCrypt);
           byte[] code = qrCodeService.generateQRCode(obj.toString(), 500, 500);
           QrCodeEntity qrCodeEntity = new QrCodeEntity();
           qrCodeEntity.setCode(code);
+          qrCodeEntity.setExternalId(newCrypt);
           qrCodeEntity.setParkingId(parkingId);
           qrCodeEntity.setCreatedAt(new Timestamp(createdAt));
           qrCodeEntity.setUpdatedAt(new Timestamp(createdAt));
           qrCodeEntity.setStatus(ApaStatus.ACTIVE_QR_CODE);
           qrCodeRepository.save(qrCodeEntity);
-
         } catch (Exception e) {
           System.out.println("Something went wrong " + e.getMessage());
           throw new Error(e.getMessage());
@@ -398,6 +400,9 @@ public class ParkingSpaceServiceImpl implements ParkingSpaceService {
     if (checkIfHavingParkingLotAttendantPermission(parkingId, userId)) {
       ParkingReservationEntity parkingRes = parkingReservationRepository
           .getById(parkingReservationId);
+      String string = new String(parkingRes.getQrCodeEntity().getCode());
+
+      System.out.println("string: " + string);
       List<ParkingReservationActivityEntity> activityEntity = parkingReservationActivityRepository
           .findAllByParkingReservationEntity(parkingRes);
       ParkingReservationResponse res = new ParkingReservationResponse(parkingRes, activityEntity);
@@ -410,15 +415,47 @@ public class ParkingSpaceServiceImpl implements ParkingSpaceService {
   @Override
   public ResponseEntity getParkingReservationByCode(int parkingId, String code, int userId) {
     if (checkIfHavingParkingLotAttendantPermission(parkingId, userId)) {
+      try {
+        byte[] uniformCode = code.getBytes();
 
-      QrCodeEntity codeEntity = qrCodeRepository.getByCode(code);
+        QrCodeEntity codeEntity = qrCodeRepository.getByCode(uniformCode);
 
-      ParkingReservationEntity parkingRes = parkingReservationRepository
-          .getByQrCodeEntity(codeEntity);
-      List<ParkingReservationActivityEntity> activityEntity = parkingReservationActivityRepository
-          .findAllByParkingReservationEntity(parkingRes);
-      ParkingReservationResponse res = new ParkingReservationResponse(parkingRes, activityEntity);
-      return new ResponseEntity<>(res, HttpStatus.OK);
+        ParkingReservationEntity parkingRes = parkingReservationRepository
+            .getByQrCodeEntity(codeEntity);
+        List<ParkingReservationActivityEntity> activityEntity = parkingReservationActivityRepository
+            .findAllByParkingReservationEntity(parkingRes);
+        ParkingReservationResponse res = new ParkingReservationResponse(parkingRes, activityEntity);
+        return new ResponseEntity<>(res, HttpStatus.OK);
+      } catch (Exception e) {
+        return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+      }
+
+    } else {
+      return new ResponseEntity<>("Cannot access this parking reservation", HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  @Override
+  public QrCodeEntity getQrCodeById(int codeId) {
+    return qrCodeRepository.findById(codeId).orElse(null);
+  }
+
+  @Override
+  public ResponseEntity getParkingReservationByExternalId(int parkingId, String externalId, int userId) {
+    if (checkIfHavingParkingLotAttendantPermission(parkingId, userId)) {
+      try {
+        QrCodeEntity codeEntity = qrCodeRepository.findByExternalId(externalId).orElse(null);
+
+        ParkingReservationEntity parkingRes = parkingReservationRepository
+            .getByQrCodeEntity(codeEntity);
+        List<ParkingReservationActivityEntity> activityEntity = parkingReservationActivityRepository
+            .findAllByParkingReservationEntity(parkingRes);
+        ParkingReservationResponse res = new ParkingReservationResponse(parkingRes, activityEntity);
+        return new ResponseEntity<>(res, HttpStatus.OK);
+      } catch (Exception e) {
+        return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+      }
+
     } else {
       return new ResponseEntity<>("Cannot access this parking reservation", HttpStatus.BAD_REQUEST);
     }

@@ -1,6 +1,8 @@
 package com.capstone.parking.service;
 
 import com.capstone.parking.entity.ParkingSpaceEntity;
+import com.capstone.parking.entity.QrCodeEntity;
+
 import org.springframework.http.ResponseEntity;
 
 public interface ParkingSpaceService {
@@ -28,5 +30,9 @@ public interface ParkingSpaceService {
   ResponseEntity getParkingReservationById(int parkingId, int parkingReservationId, int userId);
 
   ResponseEntity getParkingReservationByCode(int parkingId, String code, int userId);
+
+  QrCodeEntity getQrCodeById(int codeId);
+
+  ResponseEntity getParkingReservationByExternalId(int parkingId, String externalId, int userId);
 
 }

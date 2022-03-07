@@ -378,13 +378,10 @@ public class ParkingSpaceServiceImpl implements ParkingSpaceService {
 
         ParkingReservationEntity res = parkingReservationRepository
             .getById(parkingReservationRepository.save(parkingReservation).getId());
-
-        ParkingReservationActivityKey key = new ParkingReservationActivityKey(userId, res.getId());
-        ParkingReservationActivityEntity activityEntity = new ParkingReservationActivityEntity(key, ApaStatus.CHECK_IN,
+        ParkingReservationActivityKey key = new ParkingReservationActivityKey(userId, res.getId(), ApaStatus.CHECK_IN);
+        ParkingReservationActivityEntity activityEntity = new ParkingReservationActivityEntity(key,
             new Timestamp(System.currentTimeMillis()));
-
         parkingReservationActivityRepository.save(activityEntity);
-
         return new ResponseEntity<>(res, HttpStatus.OK);
       } catch (Exception e) {
         System.out.println("ParkingSpaceServiceImpl: CheckIn: " + e.getMessage());
@@ -456,6 +453,32 @@ public class ParkingSpaceServiceImpl implements ParkingSpaceService {
         return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
       }
 
+    } else {
+      return new ResponseEntity<>("Cannot access this parking reservation", HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  @Override
+  public ResponseEntity checkOut(int parkingId, int parkingReservationId, int userId) {
+    if (checkIfHavingParkingLotAttendantPermission(parkingId, userId)) {
+      try {
+        ParkingReservationEntity reservation = parkingReservationRepository.findById(parkingReservationId).orElse(null);
+        if (reservation == null) {
+          return new ResponseEntity<>(new ApaMessage("Cannot find this parking reservation"), HttpStatus.OK);
+        }
+        reservation.setStatus(ApaStatus.CHECK_OUT);
+        parkingReservationRepository.save(reservation);
+        ParkingReservationActivityKey key = new ParkingReservationActivityKey(userId, reservation.getId(),
+            ApaStatus.CHECK_OUT);
+        ParkingReservationActivityEntity activityEntity = new ParkingReservationActivityEntity(key,
+            new Timestamp(System.currentTimeMillis()));
+
+        parkingReservationActivityRepository.save(activityEntity);
+
+        return new ResponseEntity<>("", HttpStatus.OK);
+      } catch (Exception e) {
+        return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+      }
     } else {
       return new ResponseEntity<>("Cannot access this parking reservation", HttpStatus.BAD_REQUEST);
     }

@@ -255,6 +255,21 @@ public class ParkingSpaceController {
     return ResponseEntity.ok().contentType(MediaType.IMAGE_PNG).body(qrCode.getCode());
   }
 
+  @DeleteMapping("/{id:[\\d]+}/parking-reservation/{resId:[\\d]+}")
+  @Transactional
+  public ResponseEntity checkOut(@PathVariable("id") int parkingId,
+      @PathVariable("resId") int parkingReservationId,
+      HttpServletRequest request) {
+    try {
+      int userId;
+      userId = getLoginUserId(request);
+      return parkingSpaceService.checkOut(parkingId, parkingReservationId, userId);
+    } catch (Exception e) {
+      System.out.println("ParkingSpaceController: CheckIn: " + e.getMessage());
+      return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT);
+    }
+  }
+
   private int getLoginUserId(HttpServletRequest servletRequest) {
     UserEntity userEntity = (UserEntity) servletRequest.getAttribute("USER_INFO");
     return userEntity.getId();

@@ -23,7 +23,7 @@ public class ParkingReservationActivityEntity implements Serializable {
   private ParkingReservationEntity parkingReservationEntity;
 
   @Basic
-  @Column(name = "type")
+  @Column(name = "type", insertable = false, updatable = false)
   private String type;
 
   @Basic
@@ -45,6 +45,11 @@ public class ParkingReservationActivityEntity implements Serializable {
   public ParkingReservationActivityEntity(ParkingReservationActivityKey id, String type, Timestamp createTime) {
     this.id = id;
     this.type = type;
+    this.createTime = createTime;
+  }
+
+  public ParkingReservationActivityEntity(ParkingReservationActivityKey id, Timestamp createTime) {
+    this.id = id;
     this.createTime = createTime;
   }
 

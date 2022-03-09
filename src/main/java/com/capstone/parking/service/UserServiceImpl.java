@@ -17,8 +17,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
-
-
 @Service
 public class UserServiceImpl implements UserService {
 
@@ -81,6 +79,23 @@ public class UserServiceImpl implements UserService {
             return new ResponseEntity<>(data, HttpStatus.OK);
         } else {
             return new ResponseEntity<>(new ApaMessage("Phone Number or Password is wrong"), HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @Override
+    public ResponseEntity updateProfile(int userId, String address, String avatar, String fullName) {
+        System.out.println(userId + " hello");
+        UserEntity userEntity = userRepository.findById(userId).orElse(null);
+        if (userEntity != null) {
+            userEntity.setAddress(address);
+            userEntity.setFullName(fullName);
+            userEntity.setAvatar(avatar);
+            userRepository.save(userEntity);
+            Map<String, Object> data = new HashMap<>();
+            data.put("User", userEntity);
+            return new ResponseEntity<>(data, HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(new ApaMessage("Cannot Update"), HttpStatus.BAD_REQUEST);
         }
     }
 }

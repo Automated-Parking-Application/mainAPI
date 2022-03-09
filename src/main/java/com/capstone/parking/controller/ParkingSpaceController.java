@@ -5,6 +5,7 @@ import com.capstone.parking.entity.ParkingSpaceEntity;
 import com.capstone.parking.entity.QrCodeEntity;
 import com.capstone.parking.entity.UserEntity;
 import com.capstone.parking.service.ParkingSpaceService;
+import com.capstone.parking.service.UserService;
 import com.capstone.parking.utilities.ApaMessage;
 import java.sql.Timestamp;
 import java.util.Map;
@@ -29,6 +30,8 @@ import org.springframework.web.bind.annotation.RestController;
 public class ParkingSpaceController {
   @Autowired
   private ParkingSpaceService parkingSpaceService;
+  @Autowired
+  private UserService userService;
 
   @PutMapping("/{id:[\\d]+}")
   @Transactional
@@ -267,6 +270,21 @@ public class ParkingSpaceController {
     } catch (Exception e) {
       System.out.println("ParkingSpaceController: CheckIn: " + e.getMessage());
       return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT);
+    }
+  }
+
+  @PostMapping("/profile")
+  public ResponseEntity updateProfile(@RequestBody Map<String, String> body, HttpServletRequest request) {
+    int userId;
+    try {
+      userId = getLoginUserId(request);
+      String address = body.get("address");
+      String avatar = body.get("avatar");
+      String fullName = body.get("fullName");
+      return userService.updateProfile(userId, address, avatar, fullName);
+    } catch (Exception ex) {
+      System.out.println(ex);
+      return new ResponseEntity<>(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 

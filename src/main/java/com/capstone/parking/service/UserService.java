@@ -11,4 +11,6 @@ public interface UserService {
 
 	ResponseEntity login(String phoneNumber, String password);
 
+	ResponseEntity updateProfile(int userId, String address, String avatar, String fullName);
+
 }

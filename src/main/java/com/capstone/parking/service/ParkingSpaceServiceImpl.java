@@ -483,4 +483,18 @@ public class ParkingSpaceServiceImpl implements ParkingSpaceService {
       return new ResponseEntity<>("Cannot access this parking reservation", HttpStatus.BAD_REQUEST);
     }
   }
+
+  @Override
+  public ResponseEntity getHistoryByParkingId(int userId, int parkingId) {
+    if (checkIfHavingParkingLotAttendantPermission(parkingId, userId)) {
+      try {
+        return new ResponseEntity<>(parkingReservationActivityRepository.getHistoryByParkingId(parkingId),
+            HttpStatus.OK);
+      } catch (Exception e) {
+        return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+      }
+    } else {
+      return new ResponseEntity<>("Cannot access this parking reservation", HttpStatus.BAD_REQUEST);
+    }
+  }
 }

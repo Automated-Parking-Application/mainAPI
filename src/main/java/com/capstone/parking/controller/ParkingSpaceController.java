@@ -288,6 +288,18 @@ public class ParkingSpaceController {
     }
   }
 
+  @GetMapping("/{id:[\\d]+}/history")
+  public ResponseEntity getHistoryByParkingId(@PathVariable("id") int parkingId, HttpServletRequest request) {
+    int userId;
+    try {
+      userId = getLoginUserId(request);
+      return parkingSpaceService.getHistoryByParkingId(userId, parkingId);
+    } catch (Exception ex) {
+      System.out.println(ex);
+      return new ResponseEntity<>(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
   private int getLoginUserId(HttpServletRequest servletRequest) {
     UserEntity userEntity = (UserEntity) servletRequest.getAttribute("USER_INFO");
     return userEntity.getId();

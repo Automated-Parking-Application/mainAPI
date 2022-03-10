@@ -37,4 +37,6 @@ public interface ParkingSpaceService {
 
   ResponseEntity checkOut(int parkingId, int parkingReservationId, int userId);
 
+  ResponseEntity getHistoryByParkingId(int userId, int parkingId);
+
 }

@@ -1,7 +1,11 @@
 package com.capstone.parking.service;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.capstone.parking.entity.ParkingSpaceEntity;
 import com.capstone.parking.entity.QrCodeEntity;
+import com.capstone.parking.model.ParkingSpaceCronJob;
 
 import org.springframework.http.ResponseEntity;
 
@@ -38,5 +42,7 @@ public interface ParkingSpaceService {
   ResponseEntity checkOut(int parkingId, int parkingReservationId, int userId);
 
   ResponseEntity getHistoryByParkingId(int userId, int parkingId);
+
+  List<ParkingSpaceCronJob> getCronJobArray();
 
 }

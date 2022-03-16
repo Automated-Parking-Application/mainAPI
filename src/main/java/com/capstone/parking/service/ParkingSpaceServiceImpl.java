@@ -12,6 +12,7 @@ import com.capstone.parking.entity.QrCodeEntity;
 import com.capstone.parking.entity.RoleEntity;
 import com.capstone.parking.entity.UserEntity;
 import com.capstone.parking.entity.VehicleEntity;
+import com.capstone.parking.model.ParkingSpaceCronJob;
 import com.capstone.parking.model.SMS;
 import com.capstone.parking.repository.ParkingReservationActivityRepository;
 import com.capstone.parking.repository.ParkingReservationRepository;
@@ -496,5 +497,20 @@ public class ParkingSpaceServiceImpl implements ParkingSpaceService {
     } else {
       return new ResponseEntity<>("Cannot access this parking reservation", HttpStatus.BAD_REQUEST);
     }
+  }
+
+  private static String generateCronExpression(final Timestamp endTime) {
+    return String.format("%1$s %2$s %3$s * * *", String.valueOf(endTime.getSeconds()),
+        String.valueOf(endTime.getMinutes()), String.valueOf(endTime.getHours()));
+  }
+
+  @Override
+  public List<ParkingSpaceCronJob> getCronJobArray() {
+    List<ParkingSpaceEntity> parkingSpaceList = parkingSpaceRepository
+        .getAllAvailableParkingSpace();
+
+    return parkingSpaceList.stream()
+        .map(p -> new ParkingSpaceCronJob(String.valueOf(p.getId()), generateCronExpression(p.getEndTime())))
+        .collect(Collectors.toList());
   }
 }

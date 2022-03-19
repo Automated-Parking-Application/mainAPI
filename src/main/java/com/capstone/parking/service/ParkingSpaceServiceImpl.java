@@ -26,6 +26,7 @@ import com.capstone.parking.utilities.ApaMessage;
 import com.capstone.parking.wrapper.ParkingReservationResponse;
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.Objects;
 import java.util.Random;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -122,7 +123,6 @@ public class ParkingSpaceServiceImpl implements ParkingSpaceService {
     List<ParkingSpaceEntity> parkingSpaces;
     try {
       UserEntity user = userRepository.getById(ownerId);
-      System.out.println("hello " + user.getRoleByRoleId().getName());
       if (user.getRoleByRoleId().getName().equals(ApaRole.ROLE_ADMIN)) {
         parkingSpaces = parkingSpaceRepository.findAllByOwnerIdAndStatus(ownerId,
             (String) ApaStatus.ACTIVE_PARKING_SPACE);
@@ -400,7 +400,6 @@ public class ParkingSpaceServiceImpl implements ParkingSpaceService {
           .getById(parkingReservationId);
       String string = new String(parkingRes.getQrCodeEntity().getCode());
 
-      System.out.println("string: " + string);
       List<ParkingReservationActivityEntity> activityEntity = parkingReservationActivityRepository
           .findAllByParkingReservationEntity(parkingRes);
       ParkingReservationResponse res = new ParkingReservationResponse(parkingRes, activityEntity);
@@ -419,7 +418,7 @@ public class ParkingSpaceServiceImpl implements ParkingSpaceService {
         QrCodeEntity codeEntity = qrCodeRepository.getByCode(uniformCode);
 
         ParkingReservationEntity parkingRes = parkingReservationRepository
-            .getByQrCodeEntity(codeEntity);
+            .getByQrCodeEntityAndStatus(codeEntity, ApaStatus.CHECK_IN);
         List<ParkingReservationActivityEntity> activityEntity = parkingReservationActivityRepository
             .findAllByParkingReservationEntity(parkingRes);
         ParkingReservationResponse res = new ParkingReservationResponse(parkingRes, activityEntity);
@@ -445,12 +444,16 @@ public class ParkingSpaceServiceImpl implements ParkingSpaceService {
         QrCodeEntity codeEntity = qrCodeRepository.findByExternalId(externalId).orElse(null);
 
         ParkingReservationEntity parkingRes = parkingReservationRepository
-            .getByQrCodeEntity(codeEntity);
+            .getByQrCodeEntityAndStatus(codeEntity, ApaStatus.CHECK_IN);
+        if (parkingRes == null) {
+          return new ResponseEntity<>(new ApaMessage("No Parking Reservation with This Code"), HttpStatus.BAD_REQUEST);
+        }
         List<ParkingReservationActivityEntity> activityEntity = parkingReservationActivityRepository
             .findAllByParkingReservationEntity(parkingRes);
         ParkingReservationResponse res = new ParkingReservationResponse(parkingRes, activityEntity);
         return new ResponseEntity<>(res, HttpStatus.OK);
       } catch (Exception e) {
+        System.out.println(e.getMessage());
         return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
       }
 
@@ -513,4 +516,85 @@ public class ParkingSpaceServiceImpl implements ParkingSpaceService {
         .map(p -> new ParkingSpaceCronJob(String.valueOf(p.getId()), generateCronExpression(p.getEndTime())))
         .collect(Collectors.toList());
   }
+
+  @Override
+  public ResponseEntity checkIfAvailableQrCode(int parkingId, String externalId, int userId) {
+    if (checkIfHavingParkingLotAttendantPermission(parkingId, userId)) {
+      try {
+        QrCodeEntity codeEntity = qrCodeRepository.findByExternalId(externalId).orElse(null);
+        if (codeEntity == null) {
+          return new ResponseEntity<>("This QR Code doesn't exist", HttpStatus.OK);
+        }
+        if (Objects.equals(codeEntity.getStatus(), ApaStatus.DEACTIVE_QR_CODE)) {
+          return new ResponseEntity<>("This QR Code Is Deactivated", HttpStatus.OK);
+        }
+        ParkingReservationEntity parkingRes = parkingReservationRepository
+            .getByQrCodeEntityAndStatus(codeEntity, ApaStatus.CHECK_IN);
+        if (parkingRes != null) {
+          return new ResponseEntity<>(new ApaMessage("Existed parking reservation with this code"),
+              HttpStatus.OK);
+        }
+
+        return new ResponseEntity<>(codeEntity, HttpStatus.OK);
+      } catch (Exception e) {
+        return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+      }
+    } else {
+      return new ResponseEntity<>("Cannot access this parking reservation", HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  @Override
+  public ResponseEntity checkInWithCode(int parkingId, int userId, int codeId, String vehicleType,
+      String plateNumber, String attachment) {
+    if (checkIfHavingParkingLotAttendantPermission(parkingId, userId)) {
+      try {
+        if (checkExistedParkedVehicle(plateNumber)) {
+          return new ResponseEntity<>("This vehicle is already parked", HttpStatus.BAD_REQUEST);
+        }
+        QrCodeEntity codeEntity = qrCodeRepository.findById(codeId).orElse(null);
+
+        ParkingReservationEntity parkingRes = parkingReservationRepository
+            .getByQrCodeEntityAndStatus(codeEntity, ApaStatus.CHECK_IN);
+        if (parkingRes != null) {
+          return new ResponseEntity<>("Existed parking reservation with this code",
+              HttpStatus.BAD_REQUEST);
+        }
+
+        VehicleEntity existingVehicle;
+        VehicleEntity newVehicle = new VehicleEntity();
+        ParkingReservationEntity parkingReservation = new ParkingReservationEntity();
+
+        existingVehicle = vehicleRepository.findTop1ByPlateNumber(plateNumber);
+        ParkingSpaceEntity parking = parkingSpaceRepository.getById(parkingId);
+
+        if (existingVehicle == null) {
+          newVehicle.setPlateNumber(plateNumber);
+          newVehicle.setVehicleType(vehicleType);
+          parkingReservation.setVehicleId(vehicleRepository.save(newVehicle).getId());
+        }
+
+        parkingReservation.setAttachment(attachment);
+        parkingReservation.setStatus(ApaStatus.CHECK_IN);
+        parkingReservation.setCodeId(codeId);
+        parkingReservation.setParkingId(parkingId);
+        parkingReservation.setQrCodeEntity(codeEntity);
+        parkingReservation.setParkingSpaceEntity(parking);
+
+        ParkingReservationEntity res = parkingReservationRepository
+            .getById(parkingReservationRepository.save(parkingReservation).getId());
+        ParkingReservationActivityKey key = new ParkingReservationActivityKey(userId, res.getId(), ApaStatus.CHECK_IN);
+        ParkingReservationActivityEntity activityEntity = new ParkingReservationActivityEntity(key,
+            new Timestamp(System.currentTimeMillis()));
+        parkingReservationActivityRepository.save(activityEntity);
+        return new ResponseEntity<>(res, HttpStatus.OK);
+      } catch (Exception e) {
+        System.out.println("ParkingSpaceServiceImpl: CheckIn: " + e.getMessage());
+        return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT);
+      }
+    } else {
+      return new ResponseEntity<>("Cannot access this parking space", HttpStatus.BAD_REQUEST);
+    }
+  }
+
 }

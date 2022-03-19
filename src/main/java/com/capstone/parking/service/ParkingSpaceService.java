@@ -45,4 +45,10 @@ public interface ParkingSpaceService {
 
   List<ParkingSpaceCronJob> getCronJobArray();
 
+  ResponseEntity checkIfAvailableQrCode(int parkingId, String externalId, int userId);
+
+
+  ResponseEntity checkInWithCode(int parkingId, int userId, int codeId, String vehicleType, String plateNumber,
+      String attachment);
+
 }

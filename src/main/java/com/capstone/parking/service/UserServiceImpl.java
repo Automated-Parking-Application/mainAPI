@@ -84,7 +84,6 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public ResponseEntity updateProfile(int userId, String address, String avatar, String fullName) {
-        System.out.println(userId + " hello");
         UserEntity userEntity = userRepository.findById(userId).orElse(null);
         if (userEntity != null) {
             userEntity.setAddress(address);

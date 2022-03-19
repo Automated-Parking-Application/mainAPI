@@ -56,7 +56,6 @@ public class ParkingSpaceController {
       parkingSpaceEntity.setDescription(description);
       parkingSpaceEntity.setStartTime(startTime);
       parkingSpaceEntity.setEndTime(endTime);
-      System.out.println("name " + name);
     } catch (Exception e) {
       System.out.println("ParkingSpaceController: updateParkingSpace " + e.getMessage());
       return new ResponseEntity<>("cannot update parking space", HttpStatus.CONFLICT);
@@ -206,7 +205,12 @@ public class ParkingSpaceController {
       String vehicleType = (String) body.get("vehicleType");
       int userId;
       userId = getLoginUserId(request);
-      return parkingSpaceService.checkIn(parkingId, userId, vehicleType, plateNumber, attachment);
+      if (body.get("codeId") != null) {
+        int codeId = (int) body.get("codeId");
+        return parkingSpaceService.checkInWithCode(parkingId, userId, codeId, vehicleType, plateNumber, attachment);
+      }
+      return parkingSpaceService.checkIn(parkingId, userId, vehicleType,
+          plateNumber, attachment);
     } catch (Exception e) {
       System.out.println("ParkingSpaceController: CheckIn: " + e.getMessage());
       return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT);
@@ -247,6 +251,26 @@ public class ParkingSpaceController {
         return new ResponseEntity<>(new ApaMessage(e.getMessage()), HttpStatus.BAD_REQUEST);
       }
       return parkingSpaceService.getParkingReservationByExternalId(parkingId, externalId, userId);
+    } catch (Exception e) {
+      return new ResponseEntity<>(new ApaMessage(e.getMessage()), HttpStatus.CONFLICT);
+    }
+  }
+
+  @PostMapping("/{id:[\\d]+}/parking-reservation/qr-code")
+  public ResponseEntity checkIfAvailableQrCode(@PathVariable("id") int parkingId,
+      @RequestBody Map<String, Object> body,
+      HttpServletRequest request) {
+    try {
+      int userId;
+      String externalId;
+      try {
+        externalId = (String) body.get("externalId");
+        userId = getLoginUserId(request);
+      } catch (Exception e) {
+        System.out.println(e.getMessage());
+        return new ResponseEntity<>(new ApaMessage(e.getMessage()), HttpStatus.BAD_REQUEST);
+      }
+      return parkingSpaceService.checkIfAvailableQrCode(parkingId, externalId, userId);
     } catch (Exception e) {
       return new ResponseEntity<>(new ApaMessage(e.getMessage()), HttpStatus.CONFLICT);
     }

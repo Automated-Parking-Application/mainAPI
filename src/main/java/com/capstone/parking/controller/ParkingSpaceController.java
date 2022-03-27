@@ -324,6 +324,32 @@ public class ParkingSpaceController {
     }
   }
 
+  @GetMapping("/{id:[\\d]+}/parking-reservation")
+  public ResponseEntity getAllCheckinParkingByParkingIdInRecentDay(@PathVariable("id") int parkingId,
+      HttpServletRequest request) {
+    int userId;
+    try {
+      userId = getLoginUserId(request);
+      return parkingSpaceService.getAllCheckinParkingByParkingIdInRecentDay(userId, parkingId);
+    } catch (Exception ex) {
+      System.out.println(ex);
+      return new ResponseEntity<>(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  @GetMapping("/{id:[\\d]+}/parking-reservation/backlog")
+  public ResponseEntity getAllBacklogParkingReservation(@PathVariable("id") int parkingId,
+      HttpServletRequest request) {
+    int userId;
+    try {
+      userId = getLoginUserId(request);
+      return parkingSpaceService.getAllBacklogParkingReservation(userId, parkingId);
+    } catch (Exception ex) {
+      System.out.println(ex);
+      return new ResponseEntity<>(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
   private int getLoginUserId(HttpServletRequest servletRequest) {
     UserEntity userEntity = (UserEntity) servletRequest.getAttribute("USER_INFO");
     return userEntity.getId();

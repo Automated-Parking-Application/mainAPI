@@ -47,8 +47,11 @@ public interface ParkingSpaceService {
 
   ResponseEntity checkIfAvailableQrCode(int parkingId, String externalId, int userId);
 
-
   ResponseEntity checkInWithCode(int parkingId, int userId, int codeId, String vehicleType, String plateNumber,
       String attachment);
+
+  ResponseEntity getAllCheckinParkingByParkingIdInRecentDay(int userId, int parkingId);
+
+  ResponseEntity getAllBacklogParkingReservation(int userId, int parkingId);
 
 }

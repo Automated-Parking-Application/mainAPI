@@ -25,6 +25,10 @@ import com.capstone.parking.repository.VehicleRepository;
 import com.capstone.parking.utilities.ApaMessage;
 import com.capstone.parking.wrapper.ParkingReservationResponse;
 import java.sql.Timestamp;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.Random;
@@ -592,6 +596,72 @@ public class ParkingSpaceServiceImpl implements ParkingSpaceService {
         System.out.println("ParkingSpaceServiceImpl: CheckIn: " + e.getMessage());
         return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT);
       }
+    } else {
+      return new ResponseEntity<>("Cannot access this parking space", HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  @Override
+  public ResponseEntity getAllCheckinParkingByParkingIdInRecentDay(int userId, int parkingId) {
+    if (checkIfHavingParkingLotAttendantPermission(parkingId, userId)
+        || checkIfHavingAdminPermission(parkingId, userId)) {
+      try {
+        ParkingSpaceEntity parking = parkingSpaceRepository.getById(parkingId);
+        DateFormat timeFormat = new SimpleDateFormat("hh:mm:ss a");
+        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        SimpleDateFormat parseDate = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss a");
+
+        String startTime = timeFormat.format(parking.getStartTime());
+        String endTime = timeFormat.format(parking.getEndTime());
+        String date = dateFormat.format(new Timestamp(System.currentTimeMillis()));
+
+        Date parsedStartTime = parseDate.parse(date + " " + startTime);
+        Date parsedEndTime = parseDate.parse(date + " " + endTime);
+
+        Timestamp startTimestamp = new Timestamp(parsedStartTime.getTime());
+        Timestamp endTimestamp = new Timestamp(parsedEndTime.getTime());
+
+        System.out.println(startTimestamp);
+        System.out.println(endTimestamp);
+        List<ParkingReservationActivityEntity> res = parkingReservationActivityRepository
+            .getParkinngResBetweenTimeByParkingId(parkingId, startTimestamp, endTimestamp, ApaStatus.CHECK_IN);
+        if (res.isEmpty()) {
+          return new ResponseEntity<>(Collections.emptyList(),
+              HttpStatus.OK);
+        }
+
+        return new ResponseEntity<>(res,
+            HttpStatus.OK);
+
+      } catch (Exception e) {
+        return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+      }
+
+    } else {
+      return new ResponseEntity<>("Cannot access this parking space", HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  @Override
+  public ResponseEntity getAllBacklogParkingReservation(int userId, int parkingId) {
+    if (checkIfHavingParkingLotAttendantPermission(parkingId, userId)
+        || checkIfHavingAdminPermission(parkingId, userId)) {
+      try {
+
+        List<ParkingReservationEntity> res = parkingReservationRepository
+            .findAllByParkingIdAndStatus(parkingId, ApaStatus.CHECK_IN);
+        if (res.isEmpty()) {
+          return new ResponseEntity<>(Collections.emptyList(),
+              HttpStatus.OK);
+        }
+
+        return new ResponseEntity<>(res,
+            HttpStatus.OK);
+
+      } catch (Exception e) {
+        return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+      }
+
     } else {
       return new ResponseEntity<>("Cannot access this parking space", HttpStatus.BAD_REQUEST);
     }

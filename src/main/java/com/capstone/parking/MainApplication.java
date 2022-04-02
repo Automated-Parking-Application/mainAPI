@@ -1,15 +1,21 @@
 package com.capstone.parking;
 
+import java.io.IOException;
 import java.util.Arrays;
 
 import com.capstone.parking.filters.AdminFilter;
 import com.capstone.parking.filters.JwtFilter;
+import com.google.auth.oauth2.GoogleCredentials;
+import com.google.firebase.FirebaseApp;
+import com.google.firebase.FirebaseOptions;
+import com.google.firebase.messaging.FirebaseMessaging;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.Ordered;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
@@ -20,6 +26,18 @@ public class MainApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(MainApplication.class, args);
+	}
+
+	@Bean
+	FirebaseMessaging firebaseMessaging() throws IOException {
+		GoogleCredentials googleCredentials = GoogleCredentials
+				.fromStream(new ClassPathResource("firebase/fcm-key.json").getInputStream());
+		FirebaseOptions firebaseOptions = FirebaseOptions
+				.builder()
+				.setCredentials(googleCredentials)
+				.build();
+		FirebaseApp app = FirebaseApp.initializeApp(firebaseOptions, "my-app");
+		return FirebaseMessaging.getInstance(app);
 	}
 
 	@Bean

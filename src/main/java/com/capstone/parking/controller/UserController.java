@@ -1,18 +1,23 @@
 package com.capstone.parking.controller;
 
+import com.capstone.parking.model.Note;
 import com.capstone.parking.repository.RoleRepository;
+import com.capstone.parking.service.FirebaseMessagingService;
 import com.capstone.parking.service.UserService;
 import com.capstone.parking.utilities.ApaMessage;
 import com.capstone.parking.wrapper.SignInBody;
 import com.capstone.parking.wrapper.SignUpBody;
+import com.google.firebase.messaging.FirebaseMessagingException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
-
 
 @RestController
 @RequestMapping("/user")
@@ -23,6 +28,9 @@ public class UserController {
 
     @Autowired
     private RoleRepository roleRepository;
+
+    @Autowired
+    private FirebaseMessagingService firebaseService;
 
     @PostMapping("/register")
     public ResponseEntity register(@RequestBody SignUpBody signUpBody) {
@@ -49,5 +57,11 @@ public class UserController {
             return new ResponseEntity<>(new ApaMessage("Something went wrong"), HttpStatus.INTERNAL_SERVER_ERROR);
         }
         return responseEntity;
+    }
+
+    @RequestMapping("/send-notification")
+    @ResponseBody
+    public String sendNotification(@RequestBody Note note) throws FirebaseMessagingException {
+        return firebaseService.sendNotificationToATopic(note, "1");
     }
 }

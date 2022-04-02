@@ -39,7 +39,7 @@ public interface ParkingSpaceService {
 
   ResponseEntity getParkingReservationByExternalId(int parkingId, String externalId, int userId);
 
-  ResponseEntity checkOut(int parkingId, int parkingReservationId, int userId);
+  ResponseEntity checkOut(int parkingId, int parkingReservationId, String externalId, int userId);
 
   ResponseEntity getHistoryByParkingId(int userId, int parkingId);
 

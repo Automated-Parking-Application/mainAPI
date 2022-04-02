@@ -36,6 +36,9 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -372,6 +375,8 @@ public class ParkingSpaceServiceImpl implements ParkingSpaceService {
           newVehicle.setPlateNumber(plateNumber);
           newVehicle.setVehicleType(vehicleType);
           parkingReservation.setVehicleId(vehicleRepository.save(newVehicle).getId());
+        } else {
+          parkingReservation.setVehicleId(existingVehicle.getId());
         }
 
         parkingReservation.setAttachment(attachment);
@@ -398,12 +403,11 @@ public class ParkingSpaceServiceImpl implements ParkingSpaceService {
   }
 
   @Override
+  @Cacheable(value = "parkingReservation", key = "{#parkingId, #userId, #parkingReservationId}")
   public ResponseEntity getParkingReservationById(int parkingId, int parkingReservationId, int userId) {
     if (checkIfHavingParkingLotAttendantPermission(parkingId, userId)) {
       ParkingReservationEntity parkingRes = parkingReservationRepository
           .getById(parkingReservationId);
-      String string = new String(parkingRes.getQrCodeEntity().getCode());
-
       List<ParkingReservationActivityEntity> activityEntity = parkingReservationActivityRepository
           .findAllByParkingReservationEntity(parkingRes);
       ParkingReservationResponse res = new ParkingReservationResponse(parkingRes, activityEntity);
@@ -450,7 +454,8 @@ public class ParkingSpaceServiceImpl implements ParkingSpaceService {
         ParkingReservationEntity parkingRes = parkingReservationRepository
             .getByQrCodeEntityAndStatus(codeEntity, ApaStatus.CHECK_IN);
         if (parkingRes == null) {
-          return new ResponseEntity<>(new ApaMessage("No Parking Reservation with This Code"), HttpStatus.BAD_REQUEST);
+          return new ResponseEntity<>(new ApaMessage("No CheckIn Parking Reservation with This Code"),
+              HttpStatus.BAD_REQUEST);
         }
         List<ParkingReservationActivityEntity> activityEntity = parkingReservationActivityRepository
             .findAllByParkingReservationEntity(parkingRes);
@@ -467,7 +472,8 @@ public class ParkingSpaceServiceImpl implements ParkingSpaceService {
   }
 
   @Override
-  public ResponseEntity checkOut(int parkingId, int parkingReservationId, int userId) {
+  @CacheEvict(value = "parkingReservation", key = "{#parkingId, #userId, #parkingReservationId}")
+  public ResponseEntity checkOut(int parkingId, int parkingReservationId, String externalId, int userId) {
     if (checkIfHavingParkingLotAttendantPermission(parkingId, userId)) {
       try {
         ParkingReservationEntity reservation = parkingReservationRepository.findById(parkingReservationId).orElse(null);

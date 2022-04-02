@@ -39,7 +39,7 @@ public interface ParkingSpaceService {
 
   ResponseEntity getParkingReservationByExternalId(int parkingId, String externalId, int userId);
 
-  ResponseEntity checkOut(int parkingId, int parkingReservationId, int userId);
+  ResponseEntity checkOut(int parkingId, int parkingReservationId, String externalId, int userId);
 
   ResponseEntity getHistoryByParkingId(int userId, int parkingId);
 
@@ -47,8 +47,11 @@ public interface ParkingSpaceService {
 
   ResponseEntity checkIfAvailableQrCode(int parkingId, String externalId, int userId);
 
-
   ResponseEntity checkInWithCode(int parkingId, int userId, int codeId, String vehicleType, String plateNumber,
       String attachment);
+
+  ResponseEntity getAllCheckinParkingByParkingIdInRecentDay(int userId, int parkingId);
+
+  ResponseEntity getAllBacklogParkingReservation(int userId, int parkingId);
 
 }

@@ -282,15 +282,16 @@ public class ParkingSpaceController {
     return ResponseEntity.ok().contentType(MediaType.IMAGE_PNG).body(qrCode.getCode());
   }
 
-  @DeleteMapping("/{id:[\\d]+}/parking-reservation/{resId:[\\d]+}")
+  @PostMapping("/{id:[\\d]+}/parking-reservation/{resId:[\\d]+}/check-out")
   @Transactional
   public ResponseEntity checkOut(@PathVariable("id") int parkingId,
-      @PathVariable("resId") int parkingReservationId,
+      @PathVariable("resId") int parkingReservationId, @RequestBody Map<String, Object> body,
       HttpServletRequest request) {
     try {
       int userId;
       userId = getLoginUserId(request);
-      return parkingSpaceService.checkOut(parkingId, parkingReservationId, userId);
+      String externalId = (String) body.get("externalId");
+      return parkingSpaceService.checkOut(parkingId, parkingReservationId, externalId, userId);
     } catch (Exception e) {
       System.out.println("ParkingSpaceController: CheckIn: " + e.getMessage());
       return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT);
@@ -318,6 +319,32 @@ public class ParkingSpaceController {
     try {
       userId = getLoginUserId(request);
       return parkingSpaceService.getHistoryByParkingId(userId, parkingId);
+    } catch (Exception ex) {
+      System.out.println(ex);
+      return new ResponseEntity<>(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  @GetMapping("/{id:[\\d]+}/parking-reservation")
+  public ResponseEntity getAllCheckinParkingByParkingIdInRecentDay(@PathVariable("id") int parkingId,
+      HttpServletRequest request) {
+    int userId;
+    try {
+      userId = getLoginUserId(request);
+      return parkingSpaceService.getAllCheckinParkingByParkingIdInRecentDay(userId, parkingId);
+    } catch (Exception ex) {
+      System.out.println(ex);
+      return new ResponseEntity<>(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  @GetMapping("/{id:[\\d]+}/parking-reservation/backlog")
+  public ResponseEntity getAllBacklogParkingReservation(@PathVariable("id") int parkingId,
+      HttpServletRequest request) {
+    int userId;
+    try {
+      userId = getLoginUserId(request);
+      return parkingSpaceService.getAllBacklogParkingReservation(userId, parkingId);
     } catch (Exception ex) {
       System.out.println(ex);
       return new ResponseEntity<>(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);

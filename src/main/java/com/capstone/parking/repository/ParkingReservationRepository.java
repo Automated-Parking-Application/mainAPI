@@ -12,4 +12,6 @@ public interface ParkingReservationRepository extends JpaRepository<ParkingReser
   List<ParkingReservationEntity> findAllByVehicleEntityAndStatus(VehicleEntity vehicle, String status);
 
   ParkingReservationEntity getByQrCodeEntityAndStatus(QrCodeEntity qrCodeEntity, String status);
+
+  List<ParkingReservationEntity> findAllByParkingIdAndStatus(int parkingId, String checkOut);
 }

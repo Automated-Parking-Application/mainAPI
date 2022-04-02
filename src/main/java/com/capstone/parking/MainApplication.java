@@ -1,17 +1,12 @@
 package com.capstone.parking;
 
-import java.io.IOException;
-import java.util.Arrays;
-
 import com.capstone.parking.filters.AdminFilter;
 import com.capstone.parking.filters.JwtFilter;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
 import com.google.firebase.messaging.FirebaseMessaging;
-
-import com.capstone.parking.filters.AdminFilter;
-import com.capstone.parking.filters.JwtFilter;
+import java.io.IOException;
 import java.util.Arrays;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

@@ -673,4 +673,15 @@ public class ParkingSpaceServiceImpl implements ParkingSpaceService {
     }
   }
 
+  public int countAllBacklogParkingReservationByParkingId(int parkingId) {
+    try {
+      List<ParkingReservationEntity> res = parkingReservationRepository
+          .findAllByParkingIdAndStatus(parkingId, ApaStatus.CHECK_IN);
+      return res.size();
+    } catch (Exception e) {
+      System.out.println(e.getMessage());
+      return -1;
+    }
+  }
+
 }

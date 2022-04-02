@@ -28,6 +28,7 @@ public class FirebaseMessagingService {
         .setNotification(notification)
         .putAllData(note.getData())
         .build();
+    System.out.println("Sent");
 
     return firebaseMessaging.send(message);
   }

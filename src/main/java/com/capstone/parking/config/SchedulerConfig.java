@@ -25,8 +25,6 @@ import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 import org.springframework.scheduling.config.TriggerTask;
 import org.springframework.scheduling.support.CronTrigger;
 
-
-
 @Configuration
 @EnableScheduling
 public class SchedulerConfig implements SchedulingConfigurer, DisposableBean {
@@ -61,16 +59,22 @@ public class SchedulerConfig implements SchedulingConfigurer, DisposableBean {
 
     List<ParkingSpaceCronJob> oldCronJobList = parkingSpaceService.getCronJobArray();
     oldCronJobList.forEach(cron -> {
-      Runnable runnableTask = () -> System.out.println("Task executed at -> " + cron.getId());
-      Map<String, String> newMap = new HashMap<String, String>();
-      Note note = new Note("End Time is Coming", "Parking Space has un-checkout 3 vehicle left", newMap,"");
-      try {
-        String result = firebaseService.sendNotificationToATopic(note, cron.getId());
-        System.out.println(result);
-      } catch (FirebaseMessagingException e) {
-        e.printStackTrace();
-      }
-
+      Runnable runnableTask = () -> {
+        int count = parkingSpaceService.countAllBacklogParkingReservationByParkingId(Integer.parseInt(cron.getId()));
+        System.out.println("count " + count);
+        Map<String, String> newMap = new HashMap<>();
+        Note note = new Note("End Time is Coming", "Parking Space has un-checkout "
+            + count + " vehicle left", newMap, "");
+        try {
+          if (count > 0) {
+            String result = firebaseService.sendNotificationToATopic(note, cron.getId());
+            System.out.println("result " + result);
+            System.out.println(cron.getId());
+          }
+        } catch (FirebaseMessagingException e) {
+          e.printStackTrace();
+        }
+      };
       Trigger trigger = new Trigger() {
         @Override
         public Date nextExecutionTime(TriggerContext triggerContext) {

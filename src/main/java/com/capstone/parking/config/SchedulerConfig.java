@@ -1,16 +1,19 @@
 package com.capstone.parking.config;
 
+import com.capstone.parking.model.Note;
+import com.capstone.parking.model.ParkingSpaceCronJob;
+import com.capstone.parking.service.FirebaseMessagingService;
+import com.capstone.parking.service.ParkingSpaceService;
+import com.google.firebase.messaging.FirebaseMessagingException;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-
-import com.capstone.parking.model.ParkingSpaceCronJob;
-import com.capstone.parking.service.ParkingSpaceService;
-
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
@@ -22,11 +25,15 @@ import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 import org.springframework.scheduling.config.TriggerTask;
 import org.springframework.scheduling.support.CronTrigger;
 
+
+
 @Configuration
 @EnableScheduling
 public class SchedulerConfig implements SchedulingConfigurer, DisposableBean {
   @Autowired
   private ParkingSpaceService parkingSpaceService;
+  @Autowired
+  private FirebaseMessagingService firebaseService;
   ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
 
   public static boolean compareCronJob(final List<ParkingSpaceCronJob> x, final List<ParkingSpaceCronJob> y) {
@@ -55,6 +62,14 @@ public class SchedulerConfig implements SchedulingConfigurer, DisposableBean {
     List<ParkingSpaceCronJob> oldCronJobList = parkingSpaceService.getCronJobArray();
     oldCronJobList.forEach(cron -> {
       Runnable runnableTask = () -> System.out.println("Task executed at -> " + cron.getId());
+      Map<String, String> newMap = new HashMap<String, String>();
+      Note note = new Note("End Time is Coming", "Parking Space has un-checkout 3 vehicle left", newMap,"");
+      try {
+        String result = firebaseService.sendNotificationToATopic(note, cron.getId());
+        System.out.println(result);
+      } catch (FirebaseMessagingException e) {
+        e.printStackTrace();
+      }
 
       Trigger trigger = new Trigger() {
         @Override

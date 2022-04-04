@@ -19,8 +19,16 @@ public class UserService {
 	@Autowired
 	private UserRepository userRepository;
 
+<<<<<<< Updated upstream
 	public List<UserEntity> retriveAllProperties() {
 		return userRepository.findAll();
 	}
+=======
+	ResponseEntity changePassword(int userId, String password, String newPassword);
+
+	ResponseEntity updateProfile(int userId, String address, String avatar, String fullName);
+>>>>>>> Stashed changes
+
+	ResponseEntity resetPassword(String phoneNumber);
 
 }

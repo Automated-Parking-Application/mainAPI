@@ -11,6 +11,19 @@ public interface UserService {
 
 	ResponseEntity login(String phoneNumber, String password);
 
+
+	public List<UserEntity> retriveAllProperties() {
+		return userRepository.findAll();
+	}
+
+	ResponseEntity changePassword(int userId, String password, String newPassword);
+
 	ResponseEntity updateProfile(int userId, String address, String avatar, String fullName);
+
+
+	ResponseEntity resetPassword(String phoneNumber);
+
+	ResponseEntity updateProfile(int userId, String address, String avatar, String fullName);
+
 
 }

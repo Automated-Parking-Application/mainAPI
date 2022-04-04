@@ -65,6 +65,40 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+
+    public ResponseEntity changePassword(int userId, String password, String newPassword) {
+        UserEntity userEntity = userRepository.findById(userId).orElse(null);
+        if (userEntity != null && passwordEncoder.matches(password, userEntity.getPassword())) {
+            userEntity.setPassword(passwordEncoder.encode(newPassword));
+            userRepository.save(userEntity);
+            Map<String, Object> data = new HashMap<>();
+            data.put("User", userEntity);
+            return new ResponseEntity<>(data, HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(new ApaMessage("Cannot Update"), HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @Override
+    public ResponseEntity resetPassword(String phoneNumber) {
+        UserEntity userEntity = userRepository.findFirstByPhoneNumber(phoneNumber);
+        if (userEntity != null) {
+            if (userEntity.getStatus().equals(ApaStatus.USER_DISABLE)) {
+                return new ResponseEntity<>(new ApaMessage("Account is disabled"), HttpStatus.NOT_ACCEPTABLE);
+            }
+            Map<String, Object> data = new HashMap<>();
+            data.put(
+                    TokenAuthenticationService.HEADER_STRING,
+                    TokenAuthenticationService.createToken(userEntity));
+            data.put("User", userEntity);
+            return new ResponseEntity<>(data, HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(new ApaMessage("Phone Number or Password is wrong"), HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @Override
+
     public ResponseEntity login(String phoneNumber, String password) {
         UserEntity userEntity = userRepository.findFirstByPhoneNumber(phoneNumber);
         if (userEntity != null && passwordEncoder.matches(password, userEntity.getPassword())) {
@@ -84,6 +118,9 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public ResponseEntity updateProfile(int userId, String address, String avatar, String fullName) {
+
+        System.out.println(userId + " hello");
+
         UserEntity userEntity = userRepository.findById(userId).orElse(null);
         if (userEntity != null) {
             userEntity.setAddress(address);

@@ -1,5 +1,17 @@
 package com.capstone.parking.controller;
 
+
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.transaction.Transactional;
+import com.capstone.parking.entity.UserEntity;
+import com.capstone.parking.repository.RoleRepository;
+import com.capstone.parking.service.UserService;
+import com.capstone.parking.utilities.ApaMessage;
+import com.capstone.parking.wrapper.SignInBody;
+import com.capstone.parking.wrapper.changePasswordBody;
+import com.capstone.parking.wrapper.SignUpBody;
 import com.capstone.parking.model.Note;
 import com.capstone.parking.repository.RoleRepository;
 import com.capstone.parking.service.FirebaseMessagingService;
@@ -8,7 +20,6 @@ import com.capstone.parking.utilities.ApaMessage;
 import com.capstone.parking.wrapper.SignInBody;
 import com.capstone.parking.wrapper.SignUpBody;
 import com.google.firebase.messaging.FirebaseMessagingException;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,10 +39,8 @@ public class UserController {
 
     @Autowired
     private RoleRepository roleRepository;
-
     @Autowired
     private FirebaseMessagingService firebaseService;
-
     @PostMapping("/register")
     public ResponseEntity register(@RequestBody SignUpBody signUpBody) {
 
@@ -42,7 +51,7 @@ public class UserController {
 
         return userService.register(signUpBody);
     }
-
+  
     @PostMapping("/login")
     public ResponseEntity login(@RequestBody SignInBody body) {
         ResponseEntity responseEntity;
@@ -59,6 +68,44 @@ public class UserController {
         return responseEntity;
     }
 
+    @PostMapping("/changePassword")
+    public ResponseEntity changePassword(@RequestBody Map<String, Object> body, HttpServletRequest request) {
+        try {
+            int userId;
+            String password;
+            String newPassword;
+            try {
+                userId = getLoginUserId(request);
+                password = (String) body.get("password");
+                newPassword = (String) body.get("newPassword");
+            } catch (Exception e) {
+                System.out.println(e.getMessage());
+                return new ResponseEntity<>(new ApaMessage(e.getMessage()), HttpStatus.CONFLICT);
+            }
+            return userService.changePassword(userId, password, newPassword);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return new ResponseEntity<>(new ApaMessage(e.getMessage()), HttpStatus.CONFLICT);
+        }
+    }
+    @PostMapping("/resetPassword")
+    public ResponseEntity resetPassword(@RequestBody Map<String, Object> body, HttpServletRequest request) {
+        ResponseEntity responseEntity;
+        try {
+            String phoneNumber = (String) body.get("phoneNumber");
+            if (phoneNumber.length() == 0) {
+                return new ResponseEntity<>(new ApaMessage("Missing phone number"), HttpStatus.BAD_REQUEST);
+            }
+            responseEntity = userService.resetPassword(phoneNumber);
+        } catch (Exception ex) {
+            return new ResponseEntity<>(new ApaMessage("Something went wrong"), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        return responseEntity;
+    }
+
+    private int getLoginUserId(HttpServletRequest servletrequest) {
+        UserEntity userEntity = (UserEntity) servletrequest.getAttribute("USER_INFO");
+        return userEntity.getId();
     @RequestMapping("/send-notification")
     @ResponseBody
     public String sendNotification(@RequestBody Note note) throws FirebaseMessagingException {

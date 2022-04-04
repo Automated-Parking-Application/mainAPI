@@ -65,6 +65,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+
     public ResponseEntity changePassword(int userId, String password, String newPassword) {
         UserEntity userEntity = userRepository.findById(userId).orElse(null);
         if (userEntity != null && passwordEncoder.matches(password, userEntity.getPassword())) {
@@ -97,6 +98,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+
     public ResponseEntity login(String phoneNumber, String password) {
         UserEntity userEntity = userRepository.findFirstByPhoneNumber(phoneNumber);
         if (userEntity != null && passwordEncoder.matches(password, userEntity.getPassword())) {
@@ -116,7 +118,9 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public ResponseEntity updateProfile(int userId, String address, String avatar, String fullName) {
+
         System.out.println(userId + " hello");
+
         UserEntity userEntity = userRepository.findById(userId).orElse(null);
         if (userEntity != null) {
             userEntity.setAddress(address);

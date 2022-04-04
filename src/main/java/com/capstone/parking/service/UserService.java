@@ -1,34 +1,29 @@
 package com.capstone.parking.service;
 
+import com.capstone.parking.wrapper.SignUpBody;
 
-import java.net.URI;
-import java.util.List;
-import java.util.Optional;
-
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import com.capstone.parking.entity.UserEntity;
-import com.capstone.parking.repository.UserRepository;
+public interface UserService {
+	ResponseEntity register(SignUpBody signUpDto);
 
-@Service
-public class UserService {
+	Boolean existsByPhoneNumber(String phoneNumber);
 
-	@Autowired
-	private UserRepository userRepository;
+	ResponseEntity login(String phoneNumber, String password);
 
-<<<<<<< Updated upstream
+
 	public List<UserEntity> retriveAllProperties() {
 		return userRepository.findAll();
 	}
-=======
+
 	ResponseEntity changePassword(int userId, String password, String newPassword);
 
 	ResponseEntity updateProfile(int userId, String address, String avatar, String fullName);
->>>>>>> Stashed changes
+
 
 	ResponseEntity resetPassword(String phoneNumber);
+
+	ResponseEntity updateProfile(int userId, String address, String avatar, String fullName);
+
 
 }

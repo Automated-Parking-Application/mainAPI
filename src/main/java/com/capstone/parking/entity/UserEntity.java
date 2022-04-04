@@ -1,13 +1,17 @@
 package com.capstone.parking.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import javax.persistence.*;
+
+import java.io.Serializable;
 import java.util.Objects;
 
 @Entity
-@Table(name = "`user`", schema = "exff")
-public class UserEntity {
+@Table(name = "`user`", schema = "apa")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+public class UserEntity  implements Serializable{
     private int id;
     private String phoneNumber;
     private String password;
@@ -91,8 +95,10 @@ public class UserEntity {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
         UserEntity that = (UserEntity) o;
         return id == that.id &&
                 Objects.equals(phoneNumber, that.phoneNumber) &&

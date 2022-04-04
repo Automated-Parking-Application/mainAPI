@@ -1,11 +1,13 @@
 package com.capstone.parking.entity;
 
 import javax.persistence.*;
+
+import java.io.Serializable;
 import java.util.Objects;
 
 @Entity
-@Table(name = "`role`", schema = "exff")
-public class RoleEntity {
+@Table(name = "`role`", schema = "apa")
+public class RoleEntity implements Serializable{
     private int id;
     private String name;
 

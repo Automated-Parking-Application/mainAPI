@@ -1,10 +1,10 @@
 package com.capstone.parking.controller;
 
+
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
-
 import com.capstone.parking.entity.UserEntity;
 import com.capstone.parking.repository.RoleRepository;
 import com.capstone.parking.service.UserService;
@@ -12,12 +12,22 @@ import com.capstone.parking.utilities.ApaMessage;
 import com.capstone.parking.wrapper.SignInBody;
 import com.capstone.parking.wrapper.changePasswordBody;
 import com.capstone.parking.wrapper.SignUpBody;
+import com.capstone.parking.model.Note;
+import com.capstone.parking.repository.RoleRepository;
+import com.capstone.parking.service.FirebaseMessagingService;
+import com.capstone.parking.service.UserService;
+import com.capstone.parking.utilities.ApaMessage;
+import com.capstone.parking.wrapper.SignInBody;
+import com.capstone.parking.wrapper.SignUpBody;
+import com.google.firebase.messaging.FirebaseMessagingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -29,7 +39,8 @@ public class UserController {
 
     @Autowired
     private RoleRepository roleRepository;
-
+    @Autowired
+    private FirebaseMessagingService firebaseService;
     @PostMapping("/register")
     public ResponseEntity register(@RequestBody SignUpBody signUpBody) {
 
@@ -40,7 +51,7 @@ public class UserController {
 
         return userService.register(signUpBody);
     }
-
+  
     @PostMapping("/login")
     public ResponseEntity login(@RequestBody SignInBody body) {
         ResponseEntity responseEntity;
@@ -95,5 +106,9 @@ public class UserController {
     private int getLoginUserId(HttpServletRequest servletrequest) {
         UserEntity userEntity = (UserEntity) servletrequest.getAttribute("USER_INFO");
         return userEntity.getId();
+    @RequestMapping("/send-notification")
+    @ResponseBody
+    public String sendNotification(@RequestBody Note note) throws FirebaseMessagingException {
+        return firebaseService.sendNotificationToATopic(note, "1");
     }
 }

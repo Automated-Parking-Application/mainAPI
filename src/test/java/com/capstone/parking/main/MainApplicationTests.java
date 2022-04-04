@@ -1,4 +1,4 @@
-package com.capstone.parking;
+package com.capstone.parking.main;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

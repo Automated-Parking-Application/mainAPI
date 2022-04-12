@@ -79,10 +79,13 @@ public class MailService {
 
                 mailSender.send(message);
                 response = "Email has been sent to :" + request.getTo();
+                return new ResponseEntity<>(response, HttpStatus.OK);
+
             } catch (MessagingException | IOException | TemplateException e) {
                 response = "Email send failure to :" + request.getTo();
+                return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+
             }
-            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         } else {
             return new ResponseEntity<>("Cannot access this parking space", HttpStatus.UNAUTHORIZED);
 

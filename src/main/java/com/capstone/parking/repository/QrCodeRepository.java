@@ -22,4 +22,6 @@ public interface QrCodeRepository extends CrudRepository<QrCodeEntity, Integer> 
 
   Optional<QrCodeEntity> findByExternalId(String externalId);
   Optional<QrCodeEntity> findById(int externalId);
+
+  List<QrCodeEntity> findAllByParkingId(int parkingId);
 }

@@ -4,10 +4,13 @@ import com.capstone.parking.constants.ApaStatus;
 import com.capstone.parking.entity.ParkingSpaceEntity;
 import com.capstone.parking.entity.QrCodeEntity;
 import com.capstone.parking.entity.UserEntity;
+import com.capstone.parking.model.EmailRequestDto;
+import com.capstone.parking.service.MailService;
 import com.capstone.parking.service.ParkingSpaceService;
 import com.capstone.parking.service.UserService;
 import com.capstone.parking.utilities.ApaMessage;
 import java.sql.Timestamp;
+import java.util.HashMap;
 import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -32,6 +35,8 @@ public class ParkingSpaceController {
   private ParkingSpaceService parkingSpaceService;
   @Autowired
   private UserService userService;
+  @Autowired
+  MailService mailService;
 
   @PutMapping("/{id:[\\d]+}")
   @Transactional
@@ -345,6 +350,22 @@ public class ParkingSpaceController {
     try {
       userId = getLoginUserId(request);
       return parkingSpaceService.getAllBacklogParkingReservation(userId, parkingId);
+    } catch (Exception ex) {
+      System.out.println(ex);
+      return new ResponseEntity<>(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  @PostMapping("/{id:[\\d]+}/qr-code/send-mail")
+  public ResponseEntity<String> sendMail(@PathVariable("id") int parkingId, @RequestBody EmailRequestDto emailRequest,
+      HttpServletRequest request) {
+    int userId;
+    try {
+      userId = getLoginUserId(request);
+      Map<String, String> model = new HashMap<>();
+      model.put("name", emailRequest.getName());
+      model.put("parkingSpace", emailRequest.getParkingSpace());
+      return mailService.sendMail(parkingId, userId, emailRequest, model);
     } catch (Exception ex) {
       System.out.println(ex);
       return new ResponseEntity<>(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);

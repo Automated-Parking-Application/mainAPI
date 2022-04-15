@@ -46,8 +46,8 @@ public class ResourceController {
       BlobClient blob = container.getBlobClient(nameOfImage);
       blob.upload(file.getInputStream(), file.getSize(), true);
     } catch (Exception e) {
-      System.out.println(e);
-      return new ResponseEntity<>(e, HttpStatus.BAD_REQUEST);
+      System.out.println(e.getMessage());
+      return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
     }
 
     return new ResponseEntity<>(exportPath + nameOfImage, HttpStatus.OK);

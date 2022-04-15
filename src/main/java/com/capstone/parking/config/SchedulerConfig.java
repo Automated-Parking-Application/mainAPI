@@ -60,32 +60,33 @@ public class SchedulerConfig implements SchedulingConfigurer, DisposableBean {
     List<ParkingSpaceCronJob> oldCronJobList = parkingSpaceService.getCronJobArray();
     oldCronJobList.forEach(cron -> {
       Runnable runnableTask = () -> {
-        int count = parkingSpaceService.countAllBacklogParkingReservationByParkingId(Integer.parseInt(cron.getId()));
-        System.out.println("count " + count);
-        Map<String, String> newMap = new HashMap<>();
-        Note note = new Note("End Time is Coming", "Parking Space has un-checkout "
-            + count + " vehicle left", newMap, "");
-        try {
-          if (count > 0) {
-            String result = firebaseService.sendNotificationToATopic(note, cron.getId());
-            System.out.println("result " + result);
-            System.out.println(cron.getId());
+        if (!cron.getId().equals("-1")) {
+          int count = parkingSpaceService.countAllBacklogParkingReservationByParkingId(Integer.parseInt(cron.getId()));
+          Map<String, String> newMap = new HashMap<>();
+          Note note = new Note("End Time is Coming", "Parking Space has un-checkout "
+              + count + " vehicle left", newMap, "");
+          try {
+            if (count > 0) {
+              String result = firebaseService.sendNotificationToATopic(note, cron.getId());
+            }
+          } catch (FirebaseMessagingException e) {
+            e.printStackTrace();
           }
-        } catch (FirebaseMessagingException e) {
-          e.printStackTrace();
         }
       };
       Trigger trigger = new Trigger() {
         @Override
         public Date nextExecutionTime(TriggerContext triggerContext) {
-          List<ParkingSpaceCronJob> newCronJobList = parkingSpaceService.getCronJobArray();
-          if (!compareCronJob(oldCronJobList, newCronJobList)) {
-            taskRegistrar.setTriggerTasksList(new ArrayList<TriggerTask>());
-            configureTasks(taskRegistrar); // calling recursively.
-            taskRegistrar.destroy(); // destroys previously scheduled tasks.
-            taskRegistrar.setScheduler(executor);
-            taskRegistrar.afterPropertiesSet(); // this will schedule the task with new cron changes.
-            return null; // return null when the cron changed so the trigger will stop.
+          if (cron.getId().equals("-1")) {
+            List<ParkingSpaceCronJob> newCronJobList = parkingSpaceService.getCronJobArray();
+            if (!compareCronJob(oldCronJobList, newCronJobList)) {
+              taskRegistrar.setTriggerTasksList(new ArrayList<TriggerTask>());
+              configureTasks(taskRegistrar); // calling recursively.
+              taskRegistrar.destroy(); // destroys previously scheduled tasks.
+              taskRegistrar.setScheduler(executor);
+              taskRegistrar.afterPropertiesSet(); // this will schedule the task with new cron changes.
+              return null; // return null when the cron changed so the trigger will stop.
+            }
           }
           CronTrigger crontrigger = new CronTrigger(cron.getCronExpression());
           return crontrigger.nextExecutionTime(triggerContext);

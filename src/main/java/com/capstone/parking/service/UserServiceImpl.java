@@ -37,9 +37,10 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public ResponseEntity register(SignUpBody signUpDto) {
+        RoleEntity roleEntity = roleRepository.findTop1ByName(ApaRole.ROLE_ADMIN);
         return register(signUpDto.getPhoneNumber(), signUpDto.getPassword(), signUpDto.getFullName(),
                 signUpDto.getAddress(),
-                this.userRole);
+                roleEntity);
     }
 
     public ResponseEntity register(String phoneNumber, String password, String fullname, String address,

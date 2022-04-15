@@ -522,9 +522,12 @@ public class ParkingSpaceServiceImpl implements ParkingSpaceService {
     List<ParkingSpaceEntity> parkingSpaceList = parkingSpaceRepository
         .getAllAvailableParkingSpace();
 
-    return parkingSpaceList.stream()
+    List<ParkingSpaceCronJob> res = parkingSpaceList.stream()
         .map(p -> new ParkingSpaceCronJob(String.valueOf(p.getId()), generateCronExpression(p.getEndTime())))
         .collect(Collectors.toList());
+    res.add(new ParkingSpaceCronJob("-1", "0 * * * * *"));
+
+    return res;
   }
 
   @Override

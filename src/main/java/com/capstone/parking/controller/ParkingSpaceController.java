@@ -121,6 +121,17 @@ public class ParkingSpaceController {
     return parkingSpaceService.getAllParkingSpaceByOwnerIdOrByParkingLotAttendantId(ownerId);
   }
 
+  @GetMapping("/{id:[\\d]+}")
+  public ResponseEntity getParkingSpaceById(@PathVariable("id") int parkingId, HttpServletRequest request) {
+    int ownerId;
+    try {
+      ownerId = getLoginUserId(request);
+    } catch (Exception e) {
+      return new ResponseEntity<>(new ApaMessage(e.getMessage()), HttpStatus.CONFLICT);
+    }
+    return parkingSpaceService.getParkingSpaceById(parkingId, ownerId);
+  }
+
   @PostMapping("/{id:[\\d]+}/user")
   @Transactional
   public ResponseEntity addingParkingSpaceAttendant(@PathVariable("id") int id, @RequestBody Map<String, Object> body,
@@ -208,14 +219,15 @@ public class ParkingSpaceController {
       String plateNumber = (String) body.get("plateNumber");
       String attachment = (String) body.get("attachment");
       String vehicleType = (String) body.get("vehicleType");
+      String description = (String) body.get("description");
       int userId;
       userId = getLoginUserId(request);
       if (body.get("codeId") != null) {
         int codeId = (int) body.get("codeId");
-        return parkingSpaceService.checkInWithCode(parkingId, userId, codeId, vehicleType, plateNumber, attachment);
+        return parkingSpaceService.checkInWithCode(parkingId, userId, codeId, vehicleType, plateNumber, attachment, description);
       }
       return parkingSpaceService.checkIn(parkingId, userId, vehicleType,
-          plateNumber, attachment);
+          plateNumber, attachment, description);
     } catch (Exception e) {
       System.out.println("ParkingSpaceController: CheckIn: " + e.getMessage());
       return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT);

@@ -1,4 +1,5 @@
 package com.capstone.parking.entity;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -6,14 +7,14 @@ import java.io.Serializable;
 import java.util.Objects;
 import javax.persistence.*;
 
-
 @Entity
-@Table(name = "parking_reservation",schema = "apa")
+@Table(name = "parking_reservation", schema = "apa")
 @JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
-public class ParkingReservationEntity implements Serializable{
+public class ParkingReservationEntity implements Serializable {
   private int id;
   private String attachment;
   private String status;
+  private String description;
   private ParkingSpaceEntity parkingSpaceEntity;
   private int parkingId;
   private QrCodeEntity qrCodeEntity;
@@ -32,11 +33,11 @@ public class ParkingReservationEntity implements Serializable{
     this.id = id;
   }
 
-
   public ParkingReservationEntity() {
   }
 
-  public ParkingReservationEntity(int id, String attachment, String status, ParkingSpaceEntity parkingSpaceEntity, int parkingId, QrCodeEntity qrCodeEntity, int codeId, VehicleEntity vehicleEntity, int vehicleId) {
+  public ParkingReservationEntity(int id, String attachment, String status, ParkingSpaceEntity parkingSpaceEntity,
+      int parkingId, QrCodeEntity qrCodeEntity, int codeId, VehicleEntity vehicleEntity, int vehicleId, String description) {
     this.id = id;
     this.attachment = attachment;
     this.status = status;
@@ -46,16 +47,27 @@ public class ParkingReservationEntity implements Serializable{
     this.codeId = codeId;
     this.vehicleEntity = vehicleEntity;
     this.vehicleId = vehicleId;
+    this.description = description;
   }
 
   @Basic
-  @Column(name = "attachment")
+  @Column(name = "attachment", columnDefinition="varchar(10000)")
   public String getAttachment() {
     return this.attachment;
   }
 
   public void setAttachment(String attachment) {
     this.attachment = attachment;
+  }
+
+  @Basic
+  @Column(name = "description")
+  public String getDescription() {
+    return this.description;
+  }
+
+  public void setDescription(String description) {
+    this.description = description;
   }
 
   @Basic
@@ -132,36 +144,43 @@ public class ParkingReservationEntity implements Serializable{
     this.vehicleId = vehicleId;
   }
 
-
   @Override
-    public boolean equals(Object o) {
-        if (o == this)
-            return true;
-        if (!(o instanceof ParkingReservationEntity)) {
-            return false;
-        }
-        ParkingReservationEntity parkingReservationEntity = (ParkingReservationEntity) o;
-        return id == parkingReservationEntity.id && Objects.equals(attachment, parkingReservationEntity.attachment) && Objects.equals(status, parkingReservationEntity.status) && Objects.equals(parkingSpaceEntity, parkingReservationEntity.parkingSpaceEntity) && parkingId == parkingReservationEntity.parkingId && Objects.equals(qrCodeEntity, parkingReservationEntity.qrCodeEntity) && codeId == parkingReservationEntity.codeId && Objects.equals(vehicleEntity, parkingReservationEntity.vehicleEntity) && vehicleId == parkingReservationEntity.vehicleId;
+  public boolean equals(Object o) {
+    if (o == this)
+      return true;
+    if (!(o instanceof ParkingReservationEntity)) {
+      return false;
+    }
+    ParkingReservationEntity parkingReservationEntity = (ParkingReservationEntity) o;
+    return id == parkingReservationEntity.id && Objects.equals(attachment, parkingReservationEntity.attachment)
+        && Objects.equals(status, parkingReservationEntity.status)
+        && Objects.equals(parkingSpaceEntity, parkingReservationEntity.parkingSpaceEntity)
+        && parkingId == parkingReservationEntity.parkingId
+        && Objects.equals(qrCodeEntity, parkingReservationEntity.qrCodeEntity)
+        && codeId == parkingReservationEntity.codeId
+        && Objects.equals(vehicleEntity, parkingReservationEntity.vehicleEntity)
+        && vehicleId == parkingReservationEntity.vehicleId;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, attachment, status, parkingSpaceEntity, parkingId, qrCodeEntity, codeId, vehicleEntity, vehicleId);
+    return Objects.hash(id, attachment, status, parkingSpaceEntity, parkingId, qrCodeEntity, codeId, vehicleEntity,
+        vehicleId);
   }
 
   @Override
   public String toString() {
     return "{" +
-      " id='" + getId() + "'" +
-      ", attachment='" + getAttachment() + "'" +
-      ", status='" + getStatus() + "'" +
-      ", parkingSpaceEntity='" + getParkingSpaceEntity() + "'" +
-      ", parkingId='" + getParkingId() + "'" +
-      ", qrCodeEntity='" + getQrCodeEntity() + "'" +
-      ", codeId='" + getCodeId() + "'" +
-      ", vehicleEntity='" + getVehicleEntity() + "'" +
-      ", vehicleId='" + getVehicleId() + "'" +
-      "}";
+        " id='" + getId() + "'" +
+        ", attachment='" + getAttachment() + "'" +
+        ", status='" + getStatus() + "'" +
+        ", parkingSpaceEntity='" + getParkingSpaceEntity() + "'" +
+        ", parkingId='" + getParkingId() + "'" +
+        ", qrCodeEntity='" + getQrCodeEntity() + "'" +
+        ", codeId='" + getCodeId() + "'" +
+        ", vehicleEntity='" + getVehicleEntity() + "'" +
+        ", vehicleId='" + getVehicleId() + "'" +
+        "}";
   }
 
 }

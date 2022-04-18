@@ -349,10 +349,18 @@ public class ParkingSpaceServiceImpl implements ParkingSpaceService {
   }
 
   @Override
-  public ResponseEntity checkIn(int parkingId, int userId, String vehicleType, String plateNumber, String attachment) {
+  public ResponseEntity checkIn(int parkingId, int userId, String vehicleType, String plateNumber, String attachment,
+      String description) {
 
     if (checkIfHavingParkingLotAttendantPermission(parkingId, userId)) {
       try {
+        ParkingSpaceEntity parking = parkingSpaceRepository.getById(parkingId);
+        Timestamp currentTime = new Timestamp(System.currentTimeMillis());
+        boolean compareTime = compareTwoTimeStamps(currentTime, parking.getEndTime())
+            || !compareTwoTimeStamps(currentTime, parking.getStartTime());
+        if (compareTime) {
+          return new ResponseEntity<>("Out of Working Hour", HttpStatus.BAD_REQUEST);
+        }
         if (checkExistedParkedVehicle(plateNumber)) {
           return new ResponseEntity<>("This vehicle is already parked", HttpStatus.BAD_REQUEST);
         }
@@ -369,7 +377,6 @@ public class ParkingSpaceServiceImpl implements ParkingSpaceService {
         QrCodeEntity randomCode = codeList.get(rand.nextInt(codeList.size()));
 
         existingVehicle = vehicleRepository.findTop1ByPlateNumber(plateNumber);
-        ParkingSpaceEntity parking = parkingSpaceRepository.getById(parkingId);
 
         if (existingVehicle == null) {
           newVehicle.setPlateNumber(plateNumber);
@@ -383,6 +390,7 @@ public class ParkingSpaceServiceImpl implements ParkingSpaceService {
         parkingReservation.setStatus(ApaStatus.CHECK_IN);
         parkingReservation.setCodeId(randomCode.getId());
         parkingReservation.setParkingId(parkingId);
+        parkingReservation.setDescription(description);
         parkingReservation.setQrCodeEntity(randomCode);
         parkingReservation.setParkingSpaceEntity(parking);
 
@@ -557,11 +565,24 @@ public class ParkingSpaceServiceImpl implements ParkingSpaceService {
     }
   }
 
+  public boolean compareTwoTimeStamps(java.sql.Timestamp currentTime, java.sql.Timestamp oldTime) {
+    long min1 = oldTime.getHours() * 60 + oldTime.getMinutes();
+    long min2 = currentTime.getHours() * 60 + currentTime.getMinutes();
+    return min2 - min1 > 0;
+  }
+
   @Override
   public ResponseEntity checkInWithCode(int parkingId, int userId, int codeId, String vehicleType,
-      String plateNumber, String attachment) {
+      String plateNumber, String attachment, String description) {
     if (checkIfHavingParkingLotAttendantPermission(parkingId, userId)) {
       try {
+        ParkingSpaceEntity parking = parkingSpaceRepository.getById(parkingId);
+        Timestamp currentTime = new Timestamp(System.currentTimeMillis());
+        boolean compareTime = compareTwoTimeStamps(currentTime, parking.getEndTime())
+            || !compareTwoTimeStamps(currentTime, parking.getStartTime());
+        if (compareTime) {
+          return new ResponseEntity<>("Out of Working Hour", HttpStatus.BAD_REQUEST);
+        }
         if (checkExistedParkedVehicle(plateNumber)) {
           return new ResponseEntity<>("This vehicle is already parked", HttpStatus.BAD_REQUEST);
         }
@@ -579,7 +600,6 @@ public class ParkingSpaceServiceImpl implements ParkingSpaceService {
         ParkingReservationEntity parkingReservation = new ParkingReservationEntity();
 
         existingVehicle = vehicleRepository.findTop1ByPlateNumber(plateNumber);
-        ParkingSpaceEntity parking = parkingSpaceRepository.getById(parkingId);
 
         if (existingVehicle == null) {
           newVehicle.setPlateNumber(plateNumber);
@@ -591,6 +611,7 @@ public class ParkingSpaceServiceImpl implements ParkingSpaceService {
         parkingReservation.setStatus(ApaStatus.CHECK_IN);
         parkingReservation.setCodeId(codeId);
         parkingReservation.setParkingId(parkingId);
+        parkingReservation.setDescription(description);
         parkingReservation.setQrCodeEntity(codeEntity);
         parkingReservation.setParkingSpaceEntity(parking);
 
@@ -684,6 +705,24 @@ public class ParkingSpaceServiceImpl implements ParkingSpaceService {
     } catch (Exception e) {
       System.out.println(e.getMessage());
       return -1;
+    }
+  }
+
+  @Override
+  public ResponseEntity getParkingSpaceById(int parkingId, int ownerId) {
+    if (checkIfHavingParkingLotAttendantPermission(parkingId, ownerId)
+        || checkIfHavingAdminPermission(parkingId, ownerId)) {
+      try {
+        ParkingSpaceEntity parkingSpaceEntity = parkingSpaceRepository.findById(parkingId).orElse(null);
+        return new ResponseEntity<>(parkingSpaceEntity,
+            HttpStatus.OK);
+
+      } catch (Exception e) {
+        return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+      }
+
+    } else {
+      return new ResponseEntity<>("Cannot access this parking space", HttpStatus.BAD_REQUEST);
     }
   }
 

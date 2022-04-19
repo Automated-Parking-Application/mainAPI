@@ -5,13 +5,24 @@ import java.util.Objects;
 public class ParkingSpaceCronJob {
   private String id;
   private String cronExpression;
+  private String type;
 
   public ParkingSpaceCronJob() {
   }
 
-  public ParkingSpaceCronJob(String id, String cronExpression) {
+  public ParkingSpaceCronJob(String id, String cronExpression, String type) {
     this.id = id;
     this.cronExpression = cronExpression;
+    this.type = type;
+  }
+
+
+  public String getType() {
+    return this.type;
+  }
+
+  public void setType(String type) {
+    this.type = type;
   }
 
   public String getId() {

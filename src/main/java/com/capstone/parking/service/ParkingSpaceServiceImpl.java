@@ -32,13 +32,15 @@ import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
+
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.cache.annotation.Caching;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -525,17 +527,33 @@ public class ParkingSpaceServiceImpl implements ParkingSpaceService {
         String.valueOf(endTime.getMinutes()), String.valueOf(endTime.getHours()));
   }
 
+  private static String generate15MinutesCronExpression(final Timestamp endTime) {
+    Timestamp cloneEndTime = new Timestamp(endTime.getTime());
+    cloneEndTime.setTime(cloneEndTime.getTime() - TimeUnit.MINUTES.toMillis(15));
+
+    return String.format("%1$s %2$s %3$s * * *", String.valueOf(cloneEndTime.getSeconds()),
+        String.valueOf(cloneEndTime.getMinutes()), String.valueOf(cloneEndTime.getHours()));
+  }
+
   @Override
   public List<ParkingSpaceCronJob> getCronJobArray() {
     List<ParkingSpaceEntity> parkingSpaceList = parkingSpaceRepository
         .getAllAvailableParkingSpace();
 
     List<ParkingSpaceCronJob> res = parkingSpaceList.stream()
-        .map(p -> new ParkingSpaceCronJob(String.valueOf(p.getId()), generateCronExpression(p.getEndTime())))
+        .map(p -> new ParkingSpaceCronJob(String.valueOf(p.getId()), generateCronExpression(p.getEndTime()), "2"))
         .collect(Collectors.toList());
-    res.add(new ParkingSpaceCronJob("-1", "0 * * * * *"));
 
-    return res;
+    List<ParkingSpaceCronJob> secondRes = parkingSpaceList.stream()
+        .map(p -> new ParkingSpaceCronJob(String.valueOf(p.getId()), generate15MinutesCronExpression(p.getEndTime()),
+            "1"))
+        .collect(Collectors.toList());
+    res.add(new ParkingSpaceCronJob("-1", "0 * * * * *", "1"));
+
+    List<ParkingSpaceCronJob> newList = Stream.concat(res.stream(), secondRes.stream())
+        .collect(Collectors.toList());
+
+    return newList;
   }
 
   @Override
@@ -697,6 +715,7 @@ public class ParkingSpaceServiceImpl implements ParkingSpaceService {
     }
   }
 
+  @Override
   public int countAllBacklogParkingReservationByParkingId(int parkingId) {
     try {
       List<ParkingReservationEntity> res = parkingReservationRepository

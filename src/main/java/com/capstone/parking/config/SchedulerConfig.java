@@ -61,7 +61,8 @@ public class SchedulerConfig implements SchedulingConfigurer, DisposableBean {
     oldCronJobList.forEach(cron -> {
       Runnable runnableTask = () -> {
         if (!cron.getId().equals("-1")) {
-          int count = parkingSpaceService.countAllBacklogParkingReservationByParkingId(Integer.parseInt(cron.getId()));
+          if (cron.getType().equals("1")) {
+            int count = parkingSpaceService.countAllBacklogParkingReservationByParkingId(Integer.parseInt(cron.getId()));
           Map<String, String> newMap = new HashMap<>();
           Note note = new Note("End Time is Coming", "Parking Space has un-checkout "
               + count + " vehicle left", newMap, "");
@@ -71,6 +72,9 @@ public class SchedulerConfig implements SchedulingConfigurer, DisposableBean {
             }
           } catch (FirebaseMessagingException e) {
             e.printStackTrace();
+          }
+          } else {
+            // Archive
           }
         }
       };

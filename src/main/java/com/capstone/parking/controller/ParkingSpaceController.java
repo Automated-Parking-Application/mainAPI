@@ -337,6 +337,7 @@ public class ParkingSpaceController {
       userId = getLoginUserId(request);
       return parkingSpaceService.getHistoryByParkingId(userId, parkingId);
     } catch (Exception ex) {
+      System.out.println(ex);
       return new ResponseEntity<>(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }

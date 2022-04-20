@@ -700,8 +700,8 @@ public class ParkingSpaceServiceImpl implements ParkingSpaceService {
 
   @Override
   public ResponseEntity getAllBacklogParkingReservation(int userId, int parkingId) {
-    if (checkIfHavingParkingLotAttendantPermission(parkingId, userId)
-        || checkIfHavingAdminPermission(parkingId, userId)) {
+    // if (checkIfHavingParkingLotAttendantPermission(parkingId, userId)
+    //     || checkIfHavingAdminPermission(parkingId, userId)) {
       try {
 
         List<ParkingReservationEntity> res = parkingReservationRepository
@@ -718,9 +718,9 @@ public class ParkingSpaceServiceImpl implements ParkingSpaceService {
         return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
       }
 
-    } else {
-      return new ResponseEntity<>("Cannot access this parking space", HttpStatus.BAD_REQUEST);
-    }
+    // } else {
+    //   return new ResponseEntity<>("Cannot access this parking space", HttpStatus.BAD_REQUEST);
+    // }
   }
 
   @Override

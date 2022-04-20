@@ -124,9 +124,9 @@ public class MailService {
                                 + requestDTO.getParkingSpace())
                         .field("attachment", res)
                         .asJson();
-                        System.out.println(request);
-                        System.out.println(request.getStatus());
-                return new ResponseEntity<>(request.getBody(), HttpStatus.OK);
+                System.out.println(request);
+                System.out.println(request.getStatus());
+                return new ResponseEntity<>(request.getBody(), HttpStatus.valueOf(request.getStatus()));
             } else {
                 return new ResponseEntity<>("Cannot access this parking space", HttpStatus.UNAUTHORIZED);
             }

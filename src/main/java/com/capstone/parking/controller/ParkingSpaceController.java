@@ -377,7 +377,7 @@ public class ParkingSpaceController {
       Map<String, String> model = new HashMap<>();
       model.put("name", emailRequest.getName());
       model.put("parkingSpace", emailRequest.getParkingSpace());
-      return mailService.sendMailWithMailGun(parkingId, userId, emailRequest, model);
+      return mailService.sendMail(parkingId, userId, emailRequest, model);
     } catch (Exception ex) {
       System.out.println(ex);
       return new ResponseEntity<>(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);

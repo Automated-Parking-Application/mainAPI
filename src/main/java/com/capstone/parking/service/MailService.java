@@ -126,7 +126,7 @@ public class MailService {
                                 + ". We are QPA. We send you this email containing all QR codes belonging to the parking space"
                                 + requestDTO.getParkingSpace())
                         .field("attachment", res);
-                System.out.println(request);
+                System.out.println(request.toString());
                 return new ResponseEntity<>("", HttpStatus.BAD_GATEWAY);
             } else {
                 return new ResponseEntity<>("Cannot access this parking space", HttpStatus.UNAUTHORIZED);

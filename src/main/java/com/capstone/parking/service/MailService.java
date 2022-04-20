@@ -73,7 +73,7 @@ public class MailService {
                 Template template = configuration.getTemplate("mail-template.html");
                 String html = FreeMarkerTemplateUtils.processTemplateIntoString(template, model);
                 helper.setTo(request.getTo());
-                helper.setFrom(request.getFrom());
+                helper.setFrom("postmaster@sandbox5b9d426a6f984a05bf94dfa623afceb7.mailgun.org");
                 helper.setSubject("QR Code Information");
                 helper.setText(html, true);
 

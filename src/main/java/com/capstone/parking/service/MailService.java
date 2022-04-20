@@ -116,16 +116,14 @@ public class MailService {
                     res.add(tempFile);
                 }
 
-                MultipartBody request = Unirest
+                HttpResponse<JsonNode> request = Unirest
                         .post("https://api.mailgun.net/v3/" + MAILGUN_DOMAIN + "/messages")
                         .basicAuth("api", MAILGUN_KEY)
                         .queryString("from", "QPA <automatic@qpa.com>")
                         .queryString("to", requestDTO.getTo())
                         .queryString("subject", "QRCode from your parking space")
-                        .queryString("text", "Dear " + model.get("name")
-                                + ". We are QPA. We send you this email containing all QR codes belonging to the parking space"
-                                + requestDTO.getParkingSpace())
-                        .field("attachment", res);
+                        .queryString("text", "QRCode")
+                        .field("attachment", res).asJson();
                 System.out.println(request.toString());
                 return new ResponseEntity<>("", HttpStatus.BAD_GATEWAY);
             } else {

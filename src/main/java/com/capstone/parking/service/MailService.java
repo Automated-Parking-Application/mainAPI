@@ -8,11 +8,12 @@ import com.capstone.parking.model.EmailRequestDto;
 import com.capstone.parking.repository.ParkingSpaceRepository;
 import com.capstone.parking.repository.QrCodeRepository;
 import com.capstone.parking.repository.UserRepository;
-
+import com.mashape.unirest.http.HttpResponse;
+import com.mashape.unirest.http.JsonNode;
+import com.mashape.unirest.http.Unirest;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -22,6 +23,7 @@ import java.util.Map;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -41,6 +43,11 @@ public class MailService {
     private ParkingSpaceRepository parkingSpaceRepository;
     @Autowired
     private UserRepository userRepository;
+    @Value("${mailgun.domain}")
+    private String MAILGUN_DOMAIN;
+
+    @Value("${mailgun.key}")
+    private String MAILGUN_KEY;
 
     private boolean checkIfHavingAdminPermission(int parkingId, int userId) {
         try {
@@ -89,6 +96,41 @@ public class MailService {
         } else {
             return new ResponseEntity<>("Cannot access this parking space", HttpStatus.UNAUTHORIZED);
 
+        }
+
+    }
+
+    public ResponseEntity sendMailWithMailGun(int parkingId, int userId, EmailRequestDto requestDTO,
+            Map<String, String> model) {
+        try {
+            if (checkIfHavingAdminPermission(parkingId, userId)) {
+                ArrayList<QrCodeEntity> codeList = (ArrayList<QrCodeEntity>) qrcodeRepository
+                        .findAllByParkingId(parkingId);
+                ArrayList<File> res = new ArrayList<File>();
+                for (QrCodeEntity code : codeList) {
+                    File tempFile = File.createTempFile(code.getExternalId(), code.getExternalId(), null);
+                    FileOutputStream fos = new FileOutputStream(tempFile);
+                    fos.write(code.getCode());
+                    res.add(tempFile);
+                }
+                HttpResponse<JsonNode> request = Unirest
+                        .post("https://api.mailgun.net/v3/" + MAILGUN_DOMAIN + "/messages")
+                        .basicAuth("api", MAILGUN_KEY)
+                        .queryString("from", "QPA <automatic.qpa.com>")
+                        .queryString("to", requestDTO.getTo())
+                        .queryString("subject", "QRCode from your parking space")
+                        .queryString("text", "Dear " + model.get("name")
+                                + "We are QPA. We send you this email containing all QR codes belonging to the parking space"
+                                + requestDTO.getParkingSpace())
+                        .field("attachment", res)
+                        .asJson();
+                return new ResponseEntity<>(request.getBody(), HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>("Cannot access this parking space", HttpStatus.UNAUTHORIZED);
+            }
+        } catch (Exception e) {
+            // TODO: handle exception
+            return new ResponseEntity<>("Cannot access this parking space", HttpStatus.UNAUTHORIZED);
         }
 
     }

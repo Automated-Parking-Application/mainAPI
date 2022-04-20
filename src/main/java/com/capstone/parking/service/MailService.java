@@ -13,12 +13,9 @@ import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.request.body.MultipartBody;
 
-// import freemarker.template.Configuration;
+import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
-import net.sargue.mailgun.Configuration;
-import net.sargue.mailgun.Mail;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -34,12 +31,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
-// import org.springframework.ui.freemarker.FreeMarkerTemplateUtils;
+import org.springframework.ui.freemarker.FreeMarkerTemplateUtils;
 
 @Service
 public class MailService {
-    // @Autowired
-    // private JavaMailSender mailSender;
+    @Autowired
+    private JavaMailSender mailSender;
     @Autowired
     private Configuration configuration;
     @Autowired
@@ -65,50 +62,45 @@ public class MailService {
         }
     }
 
-    // public ResponseEntity sendMail(int parkingId, int userId, EmailRequestDto
-    // request, Map<String, String> model) {
-    // String response;
-    // MimeMessage message = mailSender.createMimeMessage();
-    // if (checkIfHavingAdminPermission(parkingId, userId)) {
-    // try {
-    // MimeMessageHelper helper = new MimeMessageHelper(message,
-    // MimeMessageHelper.MULTIPART_MODE_MIXED_RELATED,
-    // StandardCharsets.UTF_8.name());
-    // Template template = configuration.getTemplate("mail-template.html");
-    // String html = FreeMarkerTemplateUtils.processTemplateIntoString(template,
-    // model);
-    // helper.setTo(request.getTo());
-    // helper.setFrom(request.getFrom());
-    // helper.setSubject("QR Code Information");
-    // helper.setText(html, true);
+    public ResponseEntity sendMail(int parkingId, int userId, EmailRequestDto request, Map<String, String> model) {
+        String response;
+        MimeMessage message = mailSender.createMimeMessage();
+        if (checkIfHavingAdminPermission(parkingId, userId)) {
+            try {
+                MimeMessageHelper helper = new MimeMessageHelper(message,
+                        MimeMessageHelper.MULTIPART_MODE_MIXED_RELATED,
+                        StandardCharsets.UTF_8.name());
+                Template template = configuration.getTemplate("mail-template.html");
+                String html = FreeMarkerTemplateUtils.processTemplateIntoString(template, model);
+                helper.setTo(request.getTo());
+                helper.setFrom(request.getFrom());
+                helper.setSubject("QR Code Information");
+                helper.setText(html, true);
 
-    // ArrayList<QrCodeEntity> codeList = (ArrayList<QrCodeEntity>) qrcodeRepository
-    // .findAllByParkingId(parkingId);
-    // for (QrCodeEntity code : codeList) {
-    // File tempFile = File.createTempFile(code.getExternalId(),
-    // code.getExternalId(), null);
-    // FileOutputStream fos = new FileOutputStream(tempFile);
-    // fos.write(code.getCode());
-    // helper.addAttachment(code.getExternalId() + System.currentTimeMillis() +
-    // ".png", tempFile);
-    // }
+                ArrayList<QrCodeEntity> codeList = (ArrayList<QrCodeEntity>) qrcodeRepository
+                        .findAllByParkingId(parkingId);
+                for (QrCodeEntity code : codeList) {
+                    File tempFile = File.createTempFile(code.getExternalId(), code.getExternalId(), null);
+                    FileOutputStream fos = new FileOutputStream(tempFile);
+                    fos.write(code.getCode());
+                    helper.addAttachment(code.getExternalId() + System.currentTimeMillis() + ".png", tempFile);
+                }
 
-    // mailSender.send(message);
-    // response = "Email has been sent to :" + request.getTo();
-    // return new ResponseEntity<>(response, HttpStatus.OK);
+                mailSender.send(message);
+                response = "Email has been sent to :" + request.getTo();
+                return new ResponseEntity<>(response, HttpStatus.OK);
 
-    // } catch (MessagingException | IOException | TemplateException e) {
-    // response = "Email send failure to :" + request.getTo();
-    // return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+            } catch (MessagingException | IOException | TemplateException e) {
+                response = "Email send failure to :" + request.getTo();
+                return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 
-    // }
-    // } else {
-    // return new ResponseEntity<>("Cannot access this parking space",
-    // HttpStatus.UNAUTHORIZED);
+            }
+        } else {
+            return new ResponseEntity<>("Cannot access this parking space", HttpStatus.UNAUTHORIZED);
 
-    // }
+        }
 
-    // }
+    }
 
     public ResponseEntity sendMailWithMailGun(int parkingId, int userId, EmailRequestDto requestDTO,
             Map<String, String> model) {
@@ -124,27 +116,14 @@ public class MailService {
                     res.add(tempFile);
                 }
 
-                // HttpResponse<JsonNode> request = Unirest
-                // .post("https://api.mailgun.net/v3/" + MAILGUN_DOMAIN + "/messages")
-                // .basicAuth("api", MAILGUN_KEY)
-                // .queryString("from", "QPA <automatic@qpa.com>")
-                // .queryString("to", requestDTO.getTo())
-                // .queryString("subject", "QRCode from your parking space")
-                // .queryString("text", "QRCode")
-                // .field("attachment", res).asJson();
-                // System.out.println(request.toString());
-                configuration.domain(MAILGUN_DOMAIN)
-                        .apiKey(MAILGUN_KEY)
-                        .from("Test account", "postmaster@somedomain.com");
-                Mail.using(configuration)
-                        .to(requestDTO.getTo())
-                        .subject("This message has an text attachment")
-                        .text("Please find attached a file.")
-                        .multipart()
-                        .attachment(res.get(0))
-                        // .attachment(res.get(1))
-                        .build()
-                        .send();
+                HttpResponse<JsonNode> request = Unirest
+                        .post("https://api.mailgun.net/v3/" + MAILGUN_DOMAIN + "/messages")
+                        .basicAuth("api", MAILGUN_KEY)
+                        .queryString("from", "Excited User <mailgun@YOUR_DOMAIN_NAME>")
+                        .queryString("to", requestDTO.getTo())
+                        .queryString("subject", "QRCode from your parking space")
+                        .queryString("text", "QRCode").asJson();
+                System.out.println(request.getBody());
                 return new ResponseEntity<>("", HttpStatus.BAD_GATEWAY);
             } else {
                 return new ResponseEntity<>("Cannot access this parking space", HttpStatus.UNAUTHORIZED);
@@ -155,5 +134,4 @@ public class MailService {
         }
 
     }
-
 }

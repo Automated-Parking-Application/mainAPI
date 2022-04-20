@@ -8,8 +8,6 @@ import com.capstone.parking.model.EmailRequestDto;
 import com.capstone.parking.repository.ParkingSpaceRepository;
 import com.capstone.parking.repository.QrCodeRepository;
 import com.capstone.parking.repository.UserRepository;
-import com.mashape.unirest.http.HttpResponse;
-import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
@@ -113,7 +111,7 @@ public class MailService {
                     fos.write(code.getCode());
                     res.add(tempFile);
                 }
-                HttpResponse<JsonNode> request = Unirest
+                Unirest
                         .post("https://api.mailgun.net/v3/" + MAILGUN_DOMAIN + "/messages")
                         .basicAuth("api", MAILGUN_KEY)
                         .queryString("from", "QPA <automatic@qpa.com>")
@@ -122,17 +120,14 @@ public class MailService {
                         .queryString("text", "Dear " + model.get("name")
                                 + "We are QPA. We send you this email containing all QR codes belonging to the parking space"
                                 + requestDTO.getParkingSpace())
-                        .field("attachment", res)
-                        .asJson();
-                System.out.println(request.getBody());
-                System.out.println(request.getStatus());
-                return new ResponseEntity<>(request.getBody(), HttpStatus.valueOf(request.getStatus()));
+                        .field("attachment", res);
+                return new ResponseEntity<>("Sent", HttpStatus.OK);
             } else {
                 return new ResponseEntity<>("Cannot access this parking space", HttpStatus.UNAUTHORIZED);
             }
         } catch (Exception e) {
             System.out.println(e.getMessage());
-            return new ResponseEntity<>("Cannot access this parking space", HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>("Something went wrong", HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
     }

@@ -123,8 +123,7 @@ public class MailService {
                                 + requestDTO.getParkingSpace())
                         .field("attachment", res)
                         .asString();
-                System.out.println(request);
-                return new ResponseEntity<>(request, HttpStatus.OK);
+                return new ResponseEntity<>("", HttpStatus.OK);
             } else {
                 return new ResponseEntity<>("Cannot access this parking space", HttpStatus.UNAUTHORIZED);
             }

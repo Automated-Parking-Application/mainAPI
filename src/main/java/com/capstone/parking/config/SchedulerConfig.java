@@ -61,20 +61,28 @@ public class SchedulerConfig implements SchedulingConfigurer, DisposableBean {
     oldCronJobList.forEach(cron -> {
       Runnable runnableTask = () -> {
         if (!cron.getId().equals("-1")) {
+          int count = parkingSpaceService
+              .countAllBacklogParkingReservationByParkingId(Integer.parseInt(cron.getId()));
           if (cron.getType().equals("1")) {
-            int count = parkingSpaceService.countAllBacklogParkingReservationByParkingId(Integer.parseInt(cron.getId()));
-          Map<String, String> newMap = new HashMap<>();
-          Note note = new Note("End Time is Coming", "Parking Space has un-checkout "
-              + count + " vehicle left", newMap, "");
-          try {
-            if (count > 0) {
-              String result = firebaseService.sendNotificationToATopic(note, cron.getId());
+            Map<String, String> newMap = new HashMap<>();
+            Note note = new Note("End Time is Coming", "Parking Space has un-checkout "
+                + count + " vehicle left", newMap, "");
+            try {
+              if (count > 0) {
+                String result = firebaseService.sendNotificationToATopic(note, cron.getId());
+              }
+            } catch (FirebaseMessagingException e) {
+              e.printStackTrace();
             }
-          } catch (FirebaseMessagingException e) {
-            e.printStackTrace();
-          }
-          } else {
+          } else if (cron.getType().equals("2")) {
             // Archive
+            try {
+              if (count > 0) {
+                parkingSpaceService.archiveAllBacklogVehicleByParkingId(Integer.parseInt(cron.getId()));
+              }
+            } catch (Exception e) {
+              e.printStackTrace();
+            }
           }
         }
       };

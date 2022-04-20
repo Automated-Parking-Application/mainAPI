@@ -45,11 +45,6 @@ public class MailService {
     private ParkingSpaceRepository parkingSpaceRepository;
     @Autowired
     private UserRepository userRepository;
-    @Value("${mailgun.domain}")
-    private String MAILGUN_DOMAIN;
-
-    @Value("${mailgun.key}")
-    private String MAILGUN_KEY;
 
     private boolean checkIfHavingAdminPermission(int parkingId, int userId) {
         try {
@@ -98,39 +93,6 @@ public class MailService {
         } else {
             return new ResponseEntity<>("Cannot access this parking space", HttpStatus.UNAUTHORIZED);
 
-        }
-
-    }
-
-    public ResponseEntity sendMailWithMailGun(int parkingId, int userId, EmailRequestDto requestDTO,
-            Map<String, String> model) {
-        try {
-            if (checkIfHavingAdminPermission(parkingId, userId)) {
-                ArrayList<QrCodeEntity> codeList = (ArrayList<QrCodeEntity>) qrcodeRepository
-                        .findAllByParkingId(parkingId);
-                ArrayList<File> res = new ArrayList<File>();
-                for (QrCodeEntity code : codeList) {
-                    File tempFile = File.createTempFile(code.getExternalId(), code.getExternalId(), null);
-                    FileOutputStream fos = new FileOutputStream(tempFile);
-                    fos.write(code.getCode());
-                    res.add(tempFile);
-                }
-
-                HttpResponse<JsonNode> request = Unirest
-                        .post("https://api.mailgun.net/v3/" + MAILGUN_DOMAIN + "/messages")
-                        .basicAuth("api", MAILGUN_KEY)
-                        .queryString("from", "Excited User <mailgun@YOUR_DOMAIN_NAME>")
-                        .queryString("to", requestDTO.getTo())
-                        .queryString("subject", "QRCode from your parking space")
-                        .queryString("text", "QRCode").asJson();
-                System.out.println(request.getBody());
-                return new ResponseEntity<>("", HttpStatus.BAD_GATEWAY);
-            } else {
-                return new ResponseEntity<>("Cannot access this parking space", HttpStatus.UNAUTHORIZED);
-            }
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-            return new ResponseEntity<>("Something went wrong", HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
     }

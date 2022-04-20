@@ -11,4 +11,5 @@ public class ApaStatus {
   public static final String DEACTIVE_QR_CODE = "0";
   public static final String CHECK_IN = "1";
   public static final String CHECK_OUT = "0";
+  public static final String ARCHIVED = "-1";
 }

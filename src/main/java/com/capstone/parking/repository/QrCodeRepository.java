@@ -15,7 +15,7 @@ public interface QrCodeRepository extends CrudRepository<QrCodeEntity, Integer> 
 
   int countByParkingIdAndStatus(int parkingId, String status);
 
-  @Query("SELECT q from QrCodeEntity q WHERE q.parkingId = :parkingId AND q.status = 1 AND q.id NOT IN (SELECT r.codeId FROM ParkingReservationEntity r WHERE r.parkingId = :parkingId AND (r.status = 1 OR r.status = 2))")
+  @Query("SELECT q from QrCodeEntity q WHERE q.parkingId = :parkingId AND q.status = 1 AND q.id NOT IN (SELECT r.codeId FROM ParkingReservationEntity r WHERE r.parkingId = :parkingId AND (r.status = 1 OR r.status = -1))")
   List<QrCodeEntity> getAllAvailableQrCodeFromParkingId(int parkingId);
 
   QrCodeEntity getByCode(byte[] code);

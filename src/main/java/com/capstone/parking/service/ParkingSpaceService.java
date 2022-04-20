@@ -57,4 +57,6 @@ public interface ParkingSpaceService {
   int countAllBacklogParkingReservationByParkingId(int parkingId);
 
   ResponseEntity getParkingSpaceById(int parkingId, int ownerId);
+
+  void archiveAllBacklogVehicleByParkingId(int parkingId);
 }

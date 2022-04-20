@@ -11,8 +11,6 @@ import com.capstone.parking.repository.UserRepository;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
-import com.mashape.unirest.request.body.MultipartBody;
-
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
@@ -116,18 +114,18 @@ public class MailService {
                     res.add(tempFile);
                 }
 
-                MultipartBody request = Unirest
+                HttpResponse<JsonNode> request = Unirest
                         .post("https://api.mailgun.net/v3/" + MAILGUN_DOMAIN + "/messages")
                         .basicAuth("api", MAILGUN_KEY)
                         .queryString("from", "QPA <automatic@qpa.com>")
                         .queryString("to", requestDTO.getTo())
                         .queryString("subject", "QRCode from your parking space")
                         .queryString("text", "Dear " + model.get("name")
-                                + "We are QPA. We send you this email containing all QR codes belonging to the parking space"
+                                + ". We are QPA. We send you this email containing all QR codes belonging to the parking space"
                                 + requestDTO.getParkingSpace())
-                        .field("attachment", res);
-                        System.out.println(request);
-                return new ResponseEntity<>("", HttpStatus.OK);
+                        .field("attachment", res).asJson();
+                System.out.println(request.getBody());
+                return new ResponseEntity<>(request.getBody(), HttpStatus.valueOf(request.getStatus()));
             } else {
                 return new ResponseEntity<>("Cannot access this parking space", HttpStatus.UNAUTHORIZED);
             }

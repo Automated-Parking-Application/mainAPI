@@ -40,8 +40,8 @@ import org.springframework.stereotype.Service;
 public class MailService {
     // @Autowired
     // private JavaMailSender mailSender;
-    // @Autowired
-    // private Configuration configuration;
+    @Autowired
+    private Configuration configuration;
     @Autowired
     private QrCodeRepository qrcodeRepository;
     @Autowired
@@ -133,10 +133,9 @@ public class MailService {
                 // .queryString("text", "QRCode")
                 // .field("attachment", res).asJson();
                 // System.out.println(request.toString());
-                Configuration configuration = new Configuration().domain(MAILGUN_DOMAIN)
+                configuration.domain(MAILGUN_DOMAIN)
                         .apiKey(MAILGUN_KEY)
                         .from("Test account", "postmaster@somedomain.com");
-
                 Mail.using(configuration)
                         .to(requestDTO.getTo())
                         .subject("This message has an text attachment")

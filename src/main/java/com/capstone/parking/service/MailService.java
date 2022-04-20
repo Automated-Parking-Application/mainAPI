@@ -114,7 +114,7 @@ public class MailService {
                     res.add(tempFile);
                 }
 
-                HttpResponse<JsonNode> request = Unirest
+                HttpResponse<String> request = Unirest
                         .post("https://api.mailgun.net/v3/" + MAILGUN_DOMAIN + "/messages")
                         .basicAuth("api", MAILGUN_KEY)
                         .queryString("from", "QPA <automatic@qpa.com>")
@@ -123,7 +123,7 @@ public class MailService {
                         .queryString("text", "Dear " + model.get("name")
                                 + ". We are QPA. We send you this email containing all QR codes belonging to the parking space"
                                 + requestDTO.getParkingSpace())
-                        .field("attachment", res).asJson();
+                        .field("attachment", res).asString();
                 System.out.println(request.getBody());
                 return new ResponseEntity<>(request.getBody(), HttpStatus.valueOf(request.getStatus()));
             } else {
